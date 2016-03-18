@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/book_info_horizontal_margin"
+    android:paddingRight="@dimen/book_info_horizontal_margin"
+    android:paddingTop="@dimen/book_info_vertical_margin"
+    android:paddingBottom="@dimen/book_info_vertical_margin"
+    >
+
+    <com.loopj.android.image.SmartImageView
+        android:layout_width="@dimen/book_image_width"
+        android:layout_height="@dimen/book_image_height"
+        android:id="@+id/book_image"
+        android:contentDescription="@string/book_icon"
+        android:scaleType="centerCrop"
+        android:adjustViewBounds="true"
+        />
+
+    <LinearLayout
+        android:id="@+id/book_info"
+        android:layout_width="wrap_content"
+        android:layout_height="72dp"
+        android:layout_toRightOf="@id/book_image"
+        android:paddingStart="24dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/book_name_textview"
+            android:maxLines="2"
+            android:ellipsize="end"
+            style="@style/BookNameTextStyle"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/author_name_textview"
+            style="@style/AuthorNameTextStyle"/>
+
+    </LinearLayout>
+
+</RelativeLayout>

@@ -8,6 +8,7 @@ from urllib2 import urlopen
 
 app = Flask(__name__)
 app.debug = True
+URLHeader =  "http://6c9a9472.ngrok.io"
 
 #login_manager = LoginManager()
 #login_manager.init_app(app)
@@ -27,12 +28,12 @@ def getBooksJson():
             book = BeautifulSoup(open('static/ChallengeBooks/'+booksList[index]))
             bookName = book.title.string
             authorName = book.h4.find_next(re.compile('^h')).string
-            bookURL = "http://3fce4ffe.ngrok.com"+url_for('static', filename='ChallengeBooks/')+booksList[index]
-            bookImageURL = "http://3fce4ffe.ngrok.com"+url_for('static', filename='BooksImages/')+booksImageList[index]
+            bookURL = URLHeader+url_for('static', filename='ChallengeBooks/')+booksList[index]
+            bookImageURL = URLHeader+url_for('static', filename='BooksImages/')+booksImageList[index]
 
-            i = Book(bookName, authorName, bookURL, bookImageURL)
+            i = Book(index, bookName, authorName, bookURL, bookImageURL)
 
-            jsonarr.append({'bookName':i.getBookName(), 'authorName':i.getAuthorName(),
+            jsonarr.append({'bookId':i.getBookId(), 'bookName':i.getBookName(), 'authorName':i.getAuthorName(),
                 'bookURL':i.getBookURL(), 'bookImageURL':i.getBookImageURL()})
 
 

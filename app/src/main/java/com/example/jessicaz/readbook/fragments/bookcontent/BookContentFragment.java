@@ -24,8 +24,10 @@ public class BookContentFragment extends Fragment {
     private String mBookURL;
     private long startLoadTimestamp;
 
-    @Bind(R.id.book_content_webview) WebView bookContentWebView;
-    @Bind(R.id.loading_spinner) RelativeLayout mSpinner;
+    @Bind(R.id.book_content_webview)
+    WebView bookContentWebView;
+    @Bind(R.id.loading_spinner)
+    RelativeLayout mSpinner;
 
     private static Handler sHandler = new Handler();
 

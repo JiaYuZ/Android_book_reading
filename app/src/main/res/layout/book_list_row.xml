@@ -11,7 +11,6 @@
         android:layout_width="@dimen/book_image_width"
         android:layout_height="@dimen/book_image_height"
         android:id="@+id/book_image"
-        android:contentDescription="@string/book_icon"
         android:scaleType="centerCrop"
         android:adjustViewBounds="true"
         />

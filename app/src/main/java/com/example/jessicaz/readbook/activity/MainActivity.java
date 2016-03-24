@@ -19,6 +19,7 @@ import com.example.jessicaz.readbook.fragments.bookcontent.BookContentFragment;
 import com.example.jessicaz.readbook.fragments.bookslist.BookListFragment;
 import com.example.jessicaz.readbook.Interface.SwitchFragment;
 import com.example.jessicaz.readbook.fragments.login.LoginFragment;
+import com.example.jessicaz.readbook.model.Book;
 
 
 public class MainActivity extends AppCompatActivity implements SwitchFragment {
@@ -74,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements SwitchFragment {
         fragmentManager.popBackStack();
     }
 
+    //TODO set title in each fragment
     @Override
     public void switchToBookListFragment() {
         setTitle(R.string.app_name);
@@ -83,10 +85,10 @@ public class MainActivity extends AppCompatActivity implements SwitchFragment {
     }
 
     @Override
-    public void switchToBookContentFragment(String bookURL,String bookName) {
-        setTitle(bookName);
+    public void switchToBookContentFragment(String bookUrl) {
+        //setTitle(book.getBookName());
         //Created bookContentFragment with bookURL reference
-        BookContentFragment bookContentFragment = BookContentFragment.newInstance(bookURL);
+        BookContentFragment bookContentFragment = BookContentFragment.newInstance(bookUrl);
         FragmentTransaction(bookContentFragment);
     }
 

@@ -5,95 +5,229 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
+import android.net.Uri;
 
 import com.example.jessicaz.readbook.model.Book;
 
-import java.util.List;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Created by jessicazeng on 10/27/15.
  */
 public class DBHelper extends SQLiteOpenHelper {
+    private Context context;
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "BookDB";
 
-    private static final String TABLE_BOOKS = "books";
-    private static final String KEY_ID = "id";
-    private static final String KEY_BOOKNAME = "bookName";
-    private static final String KEY_STARS = "stars";
+    private static final String TEXT_TYPE = " TEXT";
+    private static final String INT_TYPE = " INT";
+    private static final String COMMA = ",";
+
+    private static final String CREATE_TABLE_BOOKS = "CREATE TABLE " + BookList.BookEntry.TABLE_BOOKS +
+            "(" + BookList.BookEntry.ROW_ID + INT_TYPE + " PRIMARY KEY AUTO INCREASE,"
+                + BookList.BookEntry.ROW_BOOK_ID + INT_TYPE + COMMA
+                + BookList.BookEntry.ROW_BOOK_NAME + TEXT_TYPE + COMMA
+                + BookList.BookEntry.ROW_BOOK_URL + TEXT_TYPE + COMMA
+                + BookList.BookEntry.ROW_AUTHOR_NAME + TEXT_TYPE + COMMA
+                + BookList.BookEntry.ROW_BOOK_IMAGE_URL + TEXT_TYPE + COMMA
+                + BookList.BookEntry.ROW_BOOK_PATH + TEXT_TYPE + COMMA
+                + BookList.BookEntry.ROW_BOOK_VISIT_COUNT + INT_TYPE + COMMA + ")";
+    private static final String DROP_TABLE_BOOKS = "DROP TABLE IF EXISTS" + BookList.BookEntry.TABLE_BOOKS;
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        this.context = context;
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String CREATE_BOOK_TABLE = "CREATE TABLE " + TABLE_BOOKS + "(" + KEY_ID + " INTEGER PRIMARY KEY,"
-                + KEY_BOOKNAME + " TEXT," + KEY_STARS + " INTEGER" + ")";
-        db.execSQL(CREATE_BOOK_TABLE);
+        db.execSQL(CREATE_TABLE_BOOKS);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
-        db.execSQL("DROP TABLE IF EXISTS books");
+        db.execSQL(DROP_TABLE_BOOKS);
         onCreate(db);
     }
 
-    private static final String[] COLUMNS = {KEY_ID, KEY_BOOKNAME, KEY_STARS};
+    private static final String[] COLUMNS = { BookList.BookEntry.ROW_ID, BookList.BookEntry.ROW_BOOK_ID,
+            BookList.BookEntry.ROW_BOOK_NAME, BookList.BookEntry.ROW_BOOK_URL, BookList.BookEntry.ROW_AUTHOR_NAME,
+            BookList.BookEntry.ROW_BOOK_IMAGE_URL, BookList.BookEntry.ROW_BOOK_PATH, BookList.BookEntry.ROW_BOOK_VISIT_COUNT };
 
-    public void addStar(Book book) {
-
+    public void addBook(Book book) {
         SQLiteDatabase db = this.getWritableDatabase();
+
         ContentValues values = new ContentValues();
+        values.put(BookList.BookEntry.ROW_BOOK_ID, book.getId());
+        values.put(BookList.BookEntry.ROW_BOOK_NAME, book.getBookName());
+        values.put(BookList.BookEntry.ROW_BOOK_URL, book.getBookURL());
+        values.put(BookList.BookEntry.ROW_AUTHOR_NAME, book.getAuthorName());
+        values.put(BookList.BookEntry.ROW_BOOK_IMAGE_URL, book.getBookImageURL());
+        values.put(BookList.BookEntry.ROW_BOOK_VISIT_COUNT, 0);
 
-        values.put(KEY_BOOKNAME, book.getBookName());
-        values.put(KEY_STARS, book.getStars());
-
-        db.insert(TABLE_BOOKS, null, values);
+        db.insert(BookList.BookEntry.TABLE_BOOKS, null, values);
         db.close();
     }
 
-    public Book getStar(int id) {
+    public Book getBook(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(TABLE_BOOKS, new String[] { KEY_ID,
-                        KEY_BOOKNAME, KEY_STARS }, KEY_ID + " =? ",
-                new String[] { String.valueOf(id) }, null, null, null);
-        if (cursor != null)
+        Book book = new Book();
+        String sortOrder = BookList.BookEntry.ROW_BOOK_VISIT_COUNT + " DESC";
+
+        Cursor cursor = db.query(
+                BookList.BookEntry.TABLE_BOOKS,           // The table to query
+                COLUMNS,                                  // The columns to return
+                BookList.BookEntry.ROW_ID + " =? ",       // The columns for the WHERE clause
+                new String[] { String.valueOf(id) },      // The values for the WHERE clause
+                null,                                     // don't group the rows
+                null,                                     // don't filter by row groups
+                sortOrder                                 // The sort order
+        );
+
+        if (cursor != null) {
             cursor.moveToFirst();
 
-        Book book = new Book(Integer.parseInt(cursor.getString(0)),
-                cursor.getString(1), cursor.getInt(2));
-        // return book
-        cursor.close();
-        db.close();
+            book.setId(cursor.getInt(1));
+            book.setBookName(cursor.getString(2));
+            book.setBookURL(cursor.getString(3));
+            book.setAuthorName(cursor.getString(4));
+            book.setBookImageURL(cursor.getString(5));
 
+            cursor.close();
+        }
+
+        db.close();
         return book;
     }
 
-    public int updateStar(Book book) {
-
+    public void insertPath(Book book) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(KEY_BOOKNAME, book.getBookName());
-        values.put(KEY_STARS, book.getStars());
+        String path = getPath(book);
 
-        int i = db.update(TABLE_BOOKS, values, KEY_ID + " = ? ",
+        ContentValues values = new ContentValues();
+        values.put(BookList.BookEntry.ROW_BOOK_PATH, path);
+
+        db.update(BookList.BookEntry.TABLE_BOOKS, values, BookList.BookEntry.ROW_BOOK_ID + " = ? ",
                 new String[] {String.valueOf(book.getId())});
 
         db.close();
-
-        return i;
     }
 
     public void deleteBook(Book book) {
         SQLiteDatabase db = this.getWritableDatabase();
 
-        db.delete(TABLE_BOOKS, KEY_ID + " = ? ", new String[]{String.valueOf(book.getId())});
+        db.delete(BookList.BookEntry.TABLE_BOOKS, BookList.BookEntry.ROW_BOOK_ID + " = ? ",
+                new String[]{String.valueOf(book.getId())});
 
         db.close();
+    }
 
-        Log.d("delete", book.toString());
+    public boolean checkDatabase() {
+//        SQLiteDatabase checkDB = null;
+//        try {
+//            SQLiteDatabase db = this.getReadableDatabase();
+//            checkDB = SQLiteDatabase.openDatabase(db.getPath(), null,
+//                    SQLiteDatabase.OPEN_READONLY);
+//            checkDB.close();
+//        } catch (SQLiteException e) {
+//            // database doesn't exist yet.
+//        }
+//        return checkDB != null;
+        File dbFile = context.getDatabasePath(DATABASE_NAME);
+        return dbFile.exists();
+    }
+
+    public boolean checkTable() {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='"
+                + BookList.BookEntry.TABLE_BOOKS + "'", null);
+
+        if(cursor!=null) {
+            if(cursor.getCount()>0) {
+                cursor.close();
+                return true;
+            }
+            cursor.close();
+        }
+
+        return false;
+    }
+
+    public boolean checkData() {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT * FROM " + BookList.BookEntry.TABLE_BOOKS, null);
+
+        if(cursor!=null) {
+            if(cursor.getCount()>0) {
+                cursor.close();
+                return true;
+            }
+            cursor.close();
+        }
+
+        return false;
+    }
+
+    public void openDatabase() {
+        File file = context.getDatabasePath(DATABASE_NAME);
+        SQLiteDatabase.openDatabase(file.getPath(), null, 0);
+    }
+
+    public String getPath(Book book) {
+        File file;
+
+        String fileName = Uri.parse(book.getBookURL()).getLastPathSegment();
+        try {
+            file = File.createTempFile(fileName, null, context.getCacheDir());
+            return file.getPath();
+        } catch (IOException e) {
+            //
+        }
+
+        return null;
+    }
+
+    public boolean hasPath(Book book) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT " + BookList.BookEntry.ROW_BOOK_PATH + " FROM " + BookList.BookEntry.TABLE_BOOKS +
+                ", WHERE " + BookList.BookEntry.ROW_BOOK_ID + " =?", new String[]{String.valueOf(book.getId())});
+
+        if(cursor!=null) {
+            if(cursor.getCount()>0) {
+                cursor.close();
+                return true;
+            }
+            cursor.close();
+        }
+
+        db.close();
+        return false;
+    }
+
+    public void increaseVisit(Book book) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int count;
+
+        Cursor cursor = db.rawQuery("SELECT " + BookList.BookEntry.ROW_BOOK_VISIT_COUNT + " FROM " + BookList.BookEntry.TABLE_BOOKS +
+                ", WHERE " + BookList.BookEntry.ROW_BOOK_ID + " =?", new String[]{String.valueOf(book.getId())});
+
+        if(cursor != null) {
+            cursor.moveToFirst();
+            count = cursor.getInt(0) + 1;
+
+            ContentValues values = new ContentValues();
+            values.put(BookList.BookEntry.ROW_BOOK_VISIT_COUNT, count);
+
+            db.update(BookList.BookEntry.TABLE_BOOKS, values, BookList.BookEntry.ROW_BOOK_ID + " = ? ",
+                    new String[] {String.valueOf(book.getId())});
+
+            cursor.close();
+        }
+
+        db.close();
     }
 }

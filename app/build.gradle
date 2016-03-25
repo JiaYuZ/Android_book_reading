@@ -21,7 +21,7 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField "String", "BOOKS_JSON_OBJECT_URL", '"http://12fa1cc9.ngrok.io/books"'
+            buildConfigField "String", "BOOKS_JSON_OBJECT_URL", '" http://2f02559b.ngrok.io/books"'
             debuggable true
         }
         client{

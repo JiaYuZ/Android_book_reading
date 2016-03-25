@@ -9,6 +9,7 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,6 +28,7 @@ import com.example.jessicaz.readbook.helper.DBHelper;
 import com.example.jessicaz.readbook.model.Book;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -118,17 +120,23 @@ public class BookListFragment extends Fragment implements GetBooksRemoteAsyncTac
     }
 
     @Override
+    public void onDetach() {
+        dbHelper.close();
+    }
+
+    @Override
     public void onBooksReceived(List<Book> booksList) {
         this.booksList = booksList;
 
         if(booksList == null || booksList.isEmpty()) {
+
             stateMessage.setText(R.string.error_get_book);
             stateMessage.setVisibility(View.VISIBLE);
         } else {
-            for(int i = 0; i < booksList.size(); i++) {
-                dbHelper.addBook(booksList.get(i));
+            for(int i = 0; i < this.booksList.size(); i++) {
+                dbHelper.addBook(this.booksList.get(i));
             }
-            adapter.setBooksList(booksList);
+            adapter.setBooksList(this.booksList);
             adapter.notifyDataSetChanged();
         }
     }
@@ -178,10 +186,11 @@ public class BookListFragment extends Fragment implements GetBooksRemoteAsyncTac
             if(dbHelper.checkTable()) {
                 if(dbHelper.checkData()) {
                     booksList.clear();
-                    for(int i = 1; i <= dbHelper.getCount(); i++) {
+                    int size = dbHelper.getCount();
+                    for(int i = 1; i <= size; i++) {
                         booksList.add(dbHelper.getBook(i));
                     }
-
+                    Collections.sort(this.booksList);
                     adapter.setBooksList(booksList);
                     adapter.notifyDataSetChanged();
                     return;

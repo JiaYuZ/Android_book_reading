@@ -92,6 +92,7 @@ public class DBHelper extends SQLiteOpenHelper implements GetHtmlContentRemoteAs
             book.setBookURL(cursor.getString(3));
             book.setAuthorName(cursor.getString(4));
             book.setBookImageURL(cursor.getString(5));
+            book.setBookVisitCount(cursor.getInt(7));
 
             cursor.close();
         }
@@ -225,17 +226,15 @@ public class DBHelper extends SQLiteOpenHelper implements GetHtmlContentRemoteAs
 
     public void increaseVisit(Book book) {
         SQLiteDatabase db = this.getWritableDatabase();
-        int count;
 
         Cursor cursor = db.rawQuery("SELECT " + BookList.BookEntry.ROW_BOOK_VISIT_COUNT + " FROM " + BookList.BookEntry.TABLE_BOOKS +
                 " WHERE " + BookList.BookEntry.ROW_BOOK_ID + " =?", new String[]{String.valueOf(book.getId())});
 
         if(cursor != null) {
             cursor.moveToFirst();
-            count = cursor.getInt(0) + 1;
 
             ContentValues values = new ContentValues();
-            values.put(BookList.BookEntry.ROW_BOOK_VISIT_COUNT, count);
+            values.put(BookList.BookEntry.ROW_BOOK_VISIT_COUNT, cursor.getInt(0) + 1);
 
             db.update(BookList.BookEntry.TABLE_BOOKS, values, BookList.BookEntry.ROW_BOOK_ID + " = ? ",
                     new String[] {String.valueOf(book.getId())});

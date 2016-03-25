@@ -1,6 +1,7 @@
 class Book():
 
    def __init__(self,  bookId, bookName, authorName, bookURL, bookImageURL):
+      self.bookId = bookId
       self.bookURL = bookURL
       self.bookName = bookName
       self.authorName = authorName

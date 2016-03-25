@@ -8,7 +8,7 @@ from urllib2 import urlopen
 
 app = Flask(__name__)
 app.debug = True
-URLHeader =  "http://6c9a9472.ngrok.io"
+URLHeader =  "http://12fa1cc9.ngrok.io"
 
 #login_manager = LoginManager()
 #login_manager.init_app(app)

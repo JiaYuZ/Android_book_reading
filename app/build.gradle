@@ -21,7 +21,7 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField "String", "BOOKS_JSON_OBJECT_URL", '"http://3fce4ffe.ngrok.com/books"'
+            buildConfigField "String", "BOOKS_JSON_OBJECT_URL", '"http://12fa1cc9.ngrok.io/books"'
             debuggable true
         }
         client{
@@ -48,4 +48,5 @@ dependencies {
     compile 'com.squareup.okio:okio:1.4.0'
     compile 'com.squareup.picasso:picasso:2.3.4'
     compile 'com.hannesdorfmann.mosby:mvp:2.0.0'
+    compile 'org.jsoup:jsoup:1.8.3'
 }

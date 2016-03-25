@@ -5,17 +5,16 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.net.Uri;
 
+import com.example.jessicaz.readbook.AsyncTack.GetHtmlContentRemoteAsyncTask;
 import com.example.jessicaz.readbook.model.Book;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Created by jessicazeng on 10/27/15.
  */
-public class DBHelper extends SQLiteOpenHelper {
+public class DBHelper extends SQLiteOpenHelper implements GetHtmlContentRemoteAsyncTask.GetHtmlContentRemote {
     private Context context;
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "BookDB";
@@ -25,15 +24,15 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String COMMA = ",";
 
     private static final String CREATE_TABLE_BOOKS = "CREATE TABLE " + BookList.BookEntry.TABLE_BOOKS +
-            "(" + BookList.BookEntry.ROW_ID + INT_TYPE + " PRIMARY KEY AUTO INCREASE,"
+            "(" + BookList.BookEntry.ROW_ID + " INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
                 + BookList.BookEntry.ROW_BOOK_ID + INT_TYPE + COMMA
                 + BookList.BookEntry.ROW_BOOK_NAME + TEXT_TYPE + COMMA
                 + BookList.BookEntry.ROW_BOOK_URL + TEXT_TYPE + COMMA
                 + BookList.BookEntry.ROW_AUTHOR_NAME + TEXT_TYPE + COMMA
                 + BookList.BookEntry.ROW_BOOK_IMAGE_URL + TEXT_TYPE + COMMA
                 + BookList.BookEntry.ROW_BOOK_PATH + TEXT_TYPE + COMMA
-                + BookList.BookEntry.ROW_BOOK_VISIT_COUNT + INT_TYPE + COMMA + ")";
-    private static final String DROP_TABLE_BOOKS = "DROP TABLE IF EXISTS" + BookList.BookEntry.TABLE_BOOKS;
+                + BookList.BookEntry.ROW_BOOK_VISIT_COUNT + INT_TYPE + ")";
+    private static final String DROP_TABLE_BOOKS = "DROP TABLE IF EXISTS " + BookList.BookEntry.TABLE_BOOKS;
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -101,9 +100,9 @@ public class DBHelper extends SQLiteOpenHelper {
         return book;
     }
 
-    public void insertPath(Book book) {
+    public void insertPath(File file, Book book) {
         SQLiteDatabase db = this.getWritableDatabase();
-        String path = getPath(book);
+        String path = "file://" + file.getPath();
 
         ContentValues values = new ContentValues();
         values.put(BookList.BookEntry.ROW_BOOK_PATH, path);
@@ -112,6 +111,21 @@ public class DBHelper extends SQLiteOpenHelper {
                 new String[] {String.valueOf(book.getId())});
 
         db.close();
+    }
+
+    public int getCount() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        int count = 0;
+
+        Cursor cursor = db.rawQuery("SELECT * FROM " + BookList.BookEntry.TABLE_BOOKS, null);
+
+        if(cursor!=null) {
+            count = cursor.getColumnCount();
+            cursor.close();
+        }
+
+        db.close();
+        return count;
     }
 
     public void deleteBook(Book book) {
@@ -124,16 +138,6 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public boolean checkDatabase() {
-//        SQLiteDatabase checkDB = null;
-//        try {
-//            SQLiteDatabase db = this.getReadableDatabase();
-//            checkDB = SQLiteDatabase.openDatabase(db.getPath(), null,
-//                    SQLiteDatabase.OPEN_READONLY);
-//            checkDB.close();
-//        } catch (SQLiteException e) {
-//            // database doesn't exist yet.
-//        }
-//        return checkDB != null;
         File dbFile = context.getDatabasePath(DATABASE_NAME);
         return dbFile.exists();
     }
@@ -152,49 +156,14 @@ public class DBHelper extends SQLiteOpenHelper {
             cursor.close();
         }
 
+        db.close();
         return false;
     }
 
     public boolean checkData() {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.rawQuery("SELECT * FROM " + BookList.BookEntry.TABLE_BOOKS, null);
-
-        if(cursor!=null) {
-            if(cursor.getCount()>0) {
-                cursor.close();
-                return true;
-            }
-            cursor.close();
-        }
-
-        return false;
-    }
-
-    public void openDatabase() {
-        File file = context.getDatabasePath(DATABASE_NAME);
-        SQLiteDatabase.openDatabase(file.getPath(), null, 0);
-    }
-
-    public String getPath(Book book) {
-        File file;
-
-        String fileName = Uri.parse(book.getBookURL()).getLastPathSegment();
-        try {
-            file = File.createTempFile(fileName, null, context.getCacheDir());
-            return file.getPath();
-        } catch (IOException e) {
-            //
-        }
-
-        return null;
-    }
-
-    public boolean hasPath(Book book) {
-        SQLiteDatabase db = this.getReadableDatabase();
-
-        Cursor cursor = db.rawQuery("SELECT " + BookList.BookEntry.ROW_BOOK_PATH + " FROM " + BookList.BookEntry.TABLE_BOOKS +
-                ", WHERE " + BookList.BookEntry.ROW_BOOK_ID + " =?", new String[]{String.valueOf(book.getId())});
+        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + BookList.BookEntry.TABLE_BOOKS, null);
 
         if(cursor!=null) {
             if(cursor.getCount()>0) {
@@ -208,12 +177,58 @@ public class DBHelper extends SQLiteOpenHelper {
         return false;
     }
 
+    public void openDatabase() {
+        File file = context.getDatabasePath(DATABASE_NAME);
+        SQLiteDatabase.openDatabase(file.getPath(), null, 0);
+    }
+
+    public void createPath(Book book) {
+        FileSaver fileSaver = new FileSaver(context,  book, this);
+        fileSaver.createFile();
+    }
+
+    public boolean hasPath(Book book) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String path = null;
+
+        Cursor cursor = db.rawQuery("SELECT " + BookList.BookEntry.ROW_BOOK_PATH + " FROM " + BookList.BookEntry.TABLE_BOOKS +
+                " WHERE " + BookList.BookEntry.ROW_BOOK_ID + " =?", new String[]{String.valueOf(book.getId())});
+
+        if(cursor!=null) {
+            cursor.moveToFirst();
+
+            path =  cursor.getString(0);
+            cursor.close();
+        }
+
+        db.close();
+        return path != null;
+    }
+
+    public String getPath(Book book) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String path = null;
+
+        Cursor cursor = db.rawQuery("SELECT " + BookList.BookEntry.ROW_BOOK_PATH + " FROM " + BookList.BookEntry.TABLE_BOOKS +
+                " WHERE " + BookList.BookEntry.ROW_BOOK_ID + " =?", new String[]{String.valueOf(book.getId())});
+
+        if(cursor!=null) {
+            cursor.moveToFirst();
+
+            path =  cursor.getString(0);
+            cursor.close();
+        }
+
+        db.close();
+        return path;
+    }
+
     public void increaseVisit(Book book) {
         SQLiteDatabase db = this.getWritableDatabase();
         int count;
 
         Cursor cursor = db.rawQuery("SELECT " + BookList.BookEntry.ROW_BOOK_VISIT_COUNT + " FROM " + BookList.BookEntry.TABLE_BOOKS +
-                ", WHERE " + BookList.BookEntry.ROW_BOOK_ID + " =?", new String[]{String.valueOf(book.getId())});
+                " WHERE " + BookList.BookEntry.ROW_BOOK_ID + " =?", new String[]{String.valueOf(book.getId())});
 
         if(cursor != null) {
             cursor.moveToFirst();
@@ -229,5 +244,10 @@ public class DBHelper extends SQLiteOpenHelper {
         }
 
         db.close();
+    }
+
+    @Override
+    public void onContentReceived(File file, Book book) {
+        insertPath(file, book);
     }
 }

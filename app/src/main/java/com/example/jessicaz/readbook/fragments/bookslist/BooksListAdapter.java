@@ -20,33 +20,44 @@ import butterknife.ButterKnife;
  * Created by jessicazeng on 10/9/15.
  */
 public class BooksListAdapter extends RecyclerView.Adapter<BooksListAdapter.ViewHolder> {
-    private final LayoutInflater mInflater;
-    private List<Book> mBooksList;
+    private final LayoutInflater inflater;
+    private List<Book> booksList;
+    private Listener listener;
 
-    public BooksListAdapter(Context context, List<Book> booksList) {
-        mInflater = LayoutInflater.from(context);
-        mBooksList = booksList;
+    public interface Listener {
+        void onBookClick(Book book);
+    }
+
+    public BooksListAdapter(Context context, List<Book> booksList, Listener listener) {
+        inflater = LayoutInflater.from(context);
+        this.booksList = booksList;
+        this.listener = listener;
     }
 
     @Override
     public BooksListAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        final View bookInfoLayoutView = mInflater.inflate(R.layout.book_list_row, viewGroup, false);
+        final View bookInfoLayoutView = inflater.inflate(R.layout.book_list_row, viewGroup, false);
         return new ViewHolder(bookInfoLayoutView);
     }
 
     @Override
     public void onBindViewHolder(final BooksListAdapter.ViewHolder viewHolder,final int position) {
-        viewHolder.bookImage.setImageUrl(mBooksList.get(position).getBookImageURL());
-        viewHolder.bookName.setText(mBooksList.get(position).getBookName());
-        viewHolder.authorName.setText(mBooksList.get(position).getAuthorName());
+        viewHolder.bookImage.setImageUrl(booksList.get(position).getBookImageURL());
+        viewHolder.bookName.setText(booksList.get(position).getBookName());
+        viewHolder.authorName.setText(booksList.get(position).getAuthorName());
+
+        viewHolder.bookName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.onBookClick(booksList.get(position));
+            }
+        });
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
-
         @Bind(R.id.book_image) SmartImageView bookImage;
         @Bind(R.id.book_name_textview) TextView bookName;
         @Bind(R.id.author_name_textview) TextView authorName;
-        //@Bind(R.id.ratingbar) RatingBar rating;
 
         public ViewHolder(View bookInfoLayoutView){
             super(bookInfoLayoutView);
@@ -56,61 +67,14 @@ public class BooksListAdapter extends RecyclerView.Adapter<BooksListAdapter.View
 
     @Override
     public int getItemCount() {
-        if(mBooksList != null) {
-            return mBooksList.size();
+        if(booksList != null) {
+            return booksList.size();
         } else {
             return 0;
         }
     }
 
-    public void animateTo(List<Book> booksList){
-        applyAndAnimateRemovals(booksList);
-        applyAndAnimateAdditions(booksList);
-        applyAndAnimateMovedBooks(booksList);
-    }
-
-    private void applyAndAnimateRemovals(List<Book> newBooksList) {
-        for (int i = mBooksList.size() - 1; i >= 0; i--) {
-            final Book book = mBooksList.get(i);
-            if(!newBooksList.contains(book)){
-                removeBooks(i);
-            }
-        }
-    }
-
-    private void applyAndAnimateAdditions(List<Book> newBooksList) {
-        for (int i = 0, count = newBooksList.size(); i <count; i++) {
-            final Book book = newBooksList.get(i);
-            if(!mBooksList.contains(book)){
-                addBooks(i, book);
-            }
-        }
-    }
-
-    private void applyAndAnimateMovedBooks(List<Book> newBooksList) {
-        for (int toPosition = newBooksList.size() - 1; toPosition >= 0; toPosition --) {
-            final Book books = newBooksList.get(toPosition);
-            final int fromPosition = mBooksList.indexOf(books);
-            if (fromPosition >= 0 && fromPosition != toPosition) {
-                moveBooks(fromPosition, toPosition);
-            }
-        }
-    }
-
-    public Book removeBooks(int position){
-        final Book books = mBooksList.remove(position);
-        notifyItemRemoved(position);
-        return books;
-    }
-
-    public void addBooks(int position, Book books){
-        mBooksList.add(position, books);
-        notifyItemInserted(position);
-    }
-
-    public void moveBooks(int fromPosition, int toPosition){
-        final Book book = mBooksList.remove(fromPosition);
-        mBooksList.add(toPosition, book);
-        notifyItemMoved(fromPosition, toPosition);
+    public void setBooksList(List<Book> booksList) {
+        this.booksList = booksList;
     }
 }

@@ -1,10 +1,17 @@
 class Book():
 
-   def __init__(self,  bookName, authorName, bookURL, bookImageURL):
+   def __init__(self,  bookId, bookName, authorName, bookURL, bookImageURL):
+      self.bookId = bookId
       self.bookURL = bookURL
       self.bookName = bookName
       self.authorName = authorName
       self.bookImageURL = bookImageURL
+
+   def getBookId(self):
+      return self.bookId
+
+   def setBookId(newBookId):
+      self.bookId = newBookId
 
    def getBookName(self):
       return self.bookName
@@ -32,6 +39,7 @@ class Book():
 
    def as_json(self):
       return dict(
+         bookId = self.bookId,
          bookName = self.bookName,
          bookURL = self.bookURL,
          authorName = self.authorName,

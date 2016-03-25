@@ -15,8 +15,7 @@ import butterknife.Bind;
  * Created by JessicaZ on 9/27/15.
  */
 public class Book implements Serializable,JsonDeserializer{
-    private int id;
-    private int stars;
+    private int bookId;
     private String bookName;
     private String bookURL;
     private String authorName;
@@ -26,24 +25,11 @@ public class Book implements Serializable,JsonDeserializer{
 
     }
 
-    public Book(int id, String bookName, int stars) {
-        this.id = id;
-        this.bookName = bookName;
-        this.stars = stars;
-    }
-
     public int getId() {
-        return id;
+        return bookId;
     }
-    public void setId() {
-        this.id = id;
-    }
-
-    public int getStars() {
-        return stars;
-    }
-    public void setStars() {
-        this.stars = stars;
+    public void setId(int bookId) {
+        this.bookId = bookId;
     }
 
     public String getBookName() {

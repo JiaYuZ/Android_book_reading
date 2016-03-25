@@ -22,19 +22,21 @@ import com.example.jessicaz.readbook.fragments.login.LoginFragment;
 
 
 public class MainActivity extends AppCompatActivity implements SwitchFragment {
-    private FragmentTransaction mFragmentTransaction;
-    private LoginFragment mLoginFragment;
+    private FragmentTransaction fragmentTransaction;
+    //private LoginFragment loginFragment;
+    private BookListFragment bookListFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mLoginFragment = new LoginFragment();
+        //loginFragment = new LoginFragment();
+        bookListFragment = new BookListFragment();
 
-        mFragmentTransaction = getFragmentManager().beginTransaction();
-        mFragmentTransaction.add(R.id.main_layout, mLoginFragment);
-        mFragmentTransaction.commit();
+        fragmentTransaction = getFragmentManager().beginTransaction();
+        fragmentTransaction.add(R.id.main_layout, bookListFragment);
+        fragmentTransaction.commit();
     }
 
     @Override
@@ -74,19 +76,20 @@ public class MainActivity extends AppCompatActivity implements SwitchFragment {
         fragmentManager.popBackStack();
     }
 
+    //TODO set title in each fragment
     @Override
     public void switchToBookListFragment() {
         setTitle(R.string.app_name);
         BookListFragment bookListFragment = new BookListFragment();
-        mFragmentTransaction = getFragmentManager().beginTransaction();
-        mFragmentTransaction.replace(R.id.main_layout, bookListFragment).commit();
+        fragmentTransaction = getFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.main_layout, bookListFragment).commit();
     }
 
     @Override
-    public void switchToBookContentFragment(String bookURL,String bookName) {
-        setTitle(bookName);
+    public void switchToBookContentFragment(String bookUrl) {
+        //setTitle(book.getBookName());
         //Created bookContentFragment with bookURL reference
-        BookContentFragment bookContentFragment = BookContentFragment.newInstance(bookURL);
+        BookContentFragment bookContentFragment = BookContentFragment.newInstance(bookUrl);
         FragmentTransaction(bookContentFragment);
     }
 
@@ -98,10 +101,10 @@ public class MainActivity extends AppCompatActivity implements SwitchFragment {
     }
 
     private void FragmentTransaction(Fragment fragment){
-        mFragmentTransaction = getFragmentManager().beginTransaction();
-        mFragmentTransaction.setCustomAnimations(R.animator.slide_in_left, R.animator.slide_out_right,
+        fragmentTransaction = getFragmentManager().beginTransaction();
+        fragmentTransaction.setCustomAnimations(R.animator.slide_in_left, R.animator.slide_out_right,
                 R.animator.slide_in_right, R.animator.slide_out_left);
-        mFragmentTransaction.replace(R.id.main_layout, fragment);
-        mFragmentTransaction.addToBackStack(null).commit();
+        fragmentTransaction.replace(R.id.main_layout, fragment);
+        fragmentTransaction.addToBackStack(null).commit();
     }
 }

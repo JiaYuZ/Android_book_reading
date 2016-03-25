@@ -20,7 +20,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.jessicaz.readbook.AsyncTack.GetBooksRemoteAsyncTack;
-import com.example.jessicaz.readbook.Interface.GetBooksRemote;
 import com.example.jessicaz.readbook.Interface.SwitchFragment;
 import com.example.jessicaz.readbook.R;
 import com.example.jessicaz.readbook.fragments.searchresult.SearchResultFragment;
@@ -38,7 +37,7 @@ import butterknife.ButterKnife;
 /**
  * Created by JessicaZ on 9/24/15.
  */
-public class BookListFragment extends Fragment implements GetBooksRemote, SearchView.OnQueryTextListener, BooksListAdapter.Listener { //Better to use ListFragment?
+public class BookListFragment extends Fragment implements GetBooksRemoteAsyncTack.GetBooksRemote, SearchView.OnQueryTextListener, BooksListAdapter.Listener { //Better to use ListFragment?
     @Bind(R.id.book_recyclerview)
     RecyclerView mRecyclerView;
     @Bind(R.id.loading_spinner)
@@ -50,7 +49,7 @@ public class BookListFragment extends Fragment implements GetBooksRemote, Search
     private long startLoadTimestamp;
     private DBHelper dbHelper;
 
-    private List<Book> booksList;
+    private List<Book> booksList = new ArrayList<>();
     private BooksListAdapter adapter;
 
     private SwitchFragment switchFragment = null;
@@ -63,7 +62,6 @@ public class BookListFragment extends Fragment implements GetBooksRemote, Search
 
         startLoadTimestamp = new Date().getTime();
         dbHelper = new DBHelper(getActivity());
-        dbHelper.openDatabase();
     }
 
     @Override
@@ -108,10 +106,6 @@ public class BookListFragment extends Fragment implements GetBooksRemote, Search
         }
 
         getBooksList();
-        setBooksListToAdapter();
-
-        getBooksRemoteAsyncTask = new GetBooksRemoteAsyncTack(this);
-        getBooksRemoteAsyncTask.execute();
     }
 
     @Override
@@ -127,19 +121,21 @@ public class BookListFragment extends Fragment implements GetBooksRemote, Search
     public void onBooksReceived(List<Book> booksList) {
         this.booksList = booksList;
 
-        if(!booksList.isEmpty()) {
-            adapter.setBooksList(booksList);
-
-            for(int i = 0; i < )
-            dbHelper.addBook(booksList);
-        } else {
+        if(booksList == null || booksList.isEmpty()) {
             stateMessage.setText(R.string.error_get_book);
             stateMessage.setVisibility(View.VISIBLE);
+        } else {
+            for(int i = 0; i < booksList.size(); i++) {
+                dbHelper.addBook(booksList.get(i));
+            }
+            adapter.setBooksList(booksList);
+            adapter.notifyDataSetChanged();
         }
     }
 
     @Override
     public void onBookClick(Book book) {
+        dbHelper.increaseVisit(book);
         openBook(book);
     }
 
@@ -167,6 +163,7 @@ public class BookListFragment extends Fragment implements GetBooksRemote, Search
         if(dbHelper.hasPath(book)) {
             bookPath = dbHelper.getPath(book);
         } else {
+            dbHelper.createPath(book);
             bookPath = book.getBookURL();
         }
 
@@ -175,10 +172,24 @@ public class BookListFragment extends Fragment implements GetBooksRemote, Search
     }
 
     public void getBooksList() {
+        if(dbHelper.checkDatabase()) {
+            dbHelper.openDatabase();
 
-    }
+            if(dbHelper.checkTable()) {
+                if(dbHelper.checkData()) {
+                    booksList.clear();
+                    for(int i = 1; i <= dbHelper.getCount(); i++) {
+                        booksList.add(dbHelper.getBook(i));
+                    }
 
-    public void setBooksListToAdapter() {
-        
+                    adapter.setBooksList(booksList);
+                    adapter.notifyDataSetChanged();
+                    return;
+                }
+            }
+        }
+
+        getBooksRemoteAsyncTask = new GetBooksRemoteAsyncTack(this);
+        getBooksRemoteAsyncTask.execute();
     }
 }

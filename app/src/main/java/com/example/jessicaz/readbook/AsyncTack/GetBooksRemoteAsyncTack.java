@@ -1,11 +1,8 @@
 package com.example.jessicaz.readbook.AsyncTack;
 
 import android.os.AsyncTask;
-import android.widget.Toast;
 
 import com.example.jessicaz.readbook.BuildConfig;
-import com.example.jessicaz.readbook.Interface.GetBooksRemote;
-import com.example.jessicaz.readbook.R;
 import com.example.jessicaz.readbook.model.Book;
 import com.example.jessicaz.readbook.service.BookService;
 
@@ -22,6 +19,10 @@ import retrofit.Retrofit;
 public class GetBooksRemoteAsyncTack extends AsyncTask<Void, Void, List<Book>> {
     BookService service;
     GetBooksRemote bookListFragment;
+
+    public interface GetBooksRemote{
+        void onBooksReceived(List<Book> bookList);
+    }
 
     public GetBooksRemoteAsyncTack(GetBooksRemote bookListFragment){
         this.bookListFragment = bookListFragment;

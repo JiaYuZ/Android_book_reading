@@ -119,8 +119,8 @@ public class DBHelper extends SQLiteOpenHelper implements GetHtmlContentRemoteAs
 
         Cursor cursor = db.rawQuery("SELECT * FROM " + BookList.BookEntry.TABLE_BOOKS, null);
 
-        if(cursor!=null) {
-            count = cursor.getColumnCount();
+        if(cursor != null) {
+            count = cursor.getCount();
             cursor.close();
         }
 

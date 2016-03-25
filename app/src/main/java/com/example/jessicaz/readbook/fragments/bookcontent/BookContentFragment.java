@@ -1,5 +1,6 @@
 package com.example.jessicaz.readbook.fragments.bookcontent;
 
+import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,13 +22,13 @@ import butterknife.ButterKnife;
  * Created by JessicaZ on 9/24/15.
  */
 public class BookContentFragment extends Fragment {
-    private String mBookURL;
+    private String bookURL;
     private long startLoadTimestamp;
 
     @Bind(R.id.book_content_webview)
-    WebView bookContentWebView;
+    WebView webView;
     @Bind(R.id.loading_spinner)
-    RelativeLayout mSpinner;
+    RelativeLayout spinner;
 
     private static Handler sHandler = new Handler();
 
@@ -49,21 +50,21 @@ public class BookContentFragment extends Fragment {
 
         Bundle arg = getArguments();
         if(arg != null){
-            mBookURL = arg.getString("bookURL");
+            bookURL = arg.getString("bookURL");
         }
 
         startLoadTimestamp = new Date().getTime();
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.book_content_fragment, container, false);
-        //Use butterknife to inflate bookcontent_layout to this view
         ButterKnife.bind(this, view);
-        //Open web page with bookURL in bookContentWebView
-        bookContentWebView.getSettings().setLoadWithOverviewMode(true);
-        bookContentWebView.loadUrl(mBookURL);
-        bookContentWebView.requestFocus();
+
+        webView.getSettings().setLoadWithOverviewMode(true);
+        webView.loadUrl(bookURL);
+        webView.requestFocus();
 
         Runnable spinnerDisplay = new Runnable() {
             @Override
@@ -73,7 +74,7 @@ public class BookContentFragment extends Fragment {
                 fadeOutAnimation.setDuration(500);
                 fadeOutAnimation.setFillAfter(true);
 
-                mSpinner.startAnimation(fadeOutAnimation);
+                spinner.startAnimation(fadeOutAnimation);
             }
         };
 

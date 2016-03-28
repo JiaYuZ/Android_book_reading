@@ -8,7 +8,7 @@ from urllib2 import urlopen
 
 app = Flask(__name__)
 app.debug = True
-URLHeader =  " http://2f02559b.ngrok.io"
+URLHeader =  "http://deb916d7.ngrok.io"
 
 #login_manager = LoginManager()
 #login_manager.init_app(app)
@@ -36,6 +36,29 @@ def getBooksJson():
             jsonarr.append({'bookId':i.getBookId(), 'bookName':i.getBookName(), 'authorName':i.getAuthorName(),
                 'bookURL':i.getBookURL(), 'bookImageURL':i.getBookImageURL()})
 
+    #Turn jsonarr into json object
+    return json.dumps(jsonarr)
+
+@app.route('/search', methods = ['POST'])
+def getSearchResultJson():
+    query = request.form['query']
+    jsonarr = []
+
+    for index in range(len(booksList)):
+    #Filter html file under the director
+        if booksList[index].endswith(".html"):
+
+            book = BeautifulSoup(open('static/ChallengeBooks/'+booksList[index]))
+            bookName = book.title.string
+            authorName = book.h4.find_next(re.compile('^h')).string
+            bookURL = URLHeader+url_for('static', filename='ChallengeBooks/')+booksList[index]
+            bookImageURL = URLHeader+url_for('static', filename='BooksImages/')+booksImageList[index]
+
+            i = Book(index, bookName, authorName, bookURL, bookImageURL)
+
+            if query in i.getBookName().lower() or query in i.getAuthorName().lower():
+                jsonarr.append({'bookId':i.getBookId(), 'bookName':i.getBookName(), 'authorName':i.getAuthorName(),
+                    'bookURL':i.getBookURL(), 'bookImageURL':i.getBookImageURL()})
 
     #Turn jsonarr into json object
     return json.dumps(jsonarr)

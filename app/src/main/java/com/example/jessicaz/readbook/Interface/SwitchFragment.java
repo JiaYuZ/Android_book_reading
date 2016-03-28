@@ -8,5 +8,6 @@ import com.example.jessicaz.readbook.model.Book;
 public interface SwitchFragment {
     void switchToBookListFragment();
     void switchToBookContentFragment(String bookUrl);
+    void switchToSearchResultFragment(String query);
     void switchToAboutFragment();
 }

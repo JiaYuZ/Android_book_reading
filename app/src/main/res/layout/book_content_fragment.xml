@@ -8,19 +8,6 @@
         android:layout_height="match_parent"
         android:id="@+id/book_content_webview" />
 
-
-    <RelativeLayout
-        android:id="@+id/loading_spinner"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/White">
-        <ProgressBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            style="?android:progressBarStyleLarge"
-            />
-    </RelativeLayout>
+    <include layout="@layout/progress_bar_layout"/>
 
 </RelativeLayout>

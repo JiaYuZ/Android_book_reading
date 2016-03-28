@@ -19,6 +19,8 @@ import com.example.jessicaz.readbook.fragments.bookcontent.BookContentFragment;
 import com.example.jessicaz.readbook.fragments.bookslist.BookListFragment;
 import com.example.jessicaz.readbook.Interface.SwitchFragment;
 import com.example.jessicaz.readbook.fragments.login.LoginFragment;
+import com.example.jessicaz.readbook.fragments.searchresult.SearchResultAdapter;
+import com.example.jessicaz.readbook.fragments.searchresult.SearchResultFragment;
 
 
 public class MainActivity extends AppCompatActivity implements SwitchFragment {
@@ -91,6 +93,12 @@ public class MainActivity extends AppCompatActivity implements SwitchFragment {
         //Created bookContentFragment with bookURL reference
         BookContentFragment bookContentFragment = BookContentFragment.newInstance(bookUrl);
         FragmentTransaction(bookContentFragment);
+    }
+
+    @Override
+    public void switchToSearchResultFragment(String query) {
+        SearchResultFragment searchResultFragment = SearchResultFragment.newInstance(query);
+        FragmentTransaction(searchResultFragment);
     }
 
     @Override

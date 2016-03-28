@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.jessicaz.readbook.AsyncTack.GetBooksRemoteAsyncTack;
 import com.example.jessicaz.readbook.Interface.SwitchFragment;
@@ -149,13 +150,11 @@ public class BookListFragment extends Fragment implements GetBooksRemoteAsyncTac
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        Fragment fragment = new SearchResultFragment();
-        FragmentManager fragmentManager = getActivity().getFragmentManager();
-
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.main_layout, fragment);
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+        if(query == null) {
+            Toast.makeText(getActivity(), R.string.error_get_book, Toast.LENGTH_LONG).show();
+        } else {
+            switchFragment.switchToSearchResultFragment(query);
+        }
 
         return true;
     }

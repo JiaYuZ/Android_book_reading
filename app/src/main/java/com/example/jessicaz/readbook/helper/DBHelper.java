@@ -15,6 +15,8 @@ import java.io.File;
  * Created by jessicazeng on 10/27/15.
  */
 public class DBHelper extends SQLiteOpenHelper implements GetHtmlContentRemoteAsyncTask.GetHtmlContentRemote {
+    private static DBHelper instance = null;
+
     private Context context;
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "BookDB";
@@ -37,6 +39,16 @@ public class DBHelper extends SQLiteOpenHelper implements GetHtmlContentRemoteAs
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         this.context = context;
+    }
+
+    public static DBHelper getInstance(Context ctx) {
+        // Use the application context, which will ensure that you
+        // don't accidentally leak an Activity's context.
+        // See this article for more information: http://bit.ly/6LRzfx
+        if (instance == null) {
+            instance = new DBHelper(ctx.getApplicationContext());
+        }
+        return instance;
     }
 
     @Override
@@ -72,7 +84,6 @@ public class DBHelper extends SQLiteOpenHelper implements GetHtmlContentRemoteAs
     public Book getBook(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
         Book book = new Book();
-        String sortOrder = BookList.BookEntry.ROW_BOOK_VISIT_COUNT + " DESC";
 
         Cursor cursor = db.query(
                 BookList.BookEntry.TABLE_BOOKS,           // The table to query
@@ -81,7 +92,7 @@ public class DBHelper extends SQLiteOpenHelper implements GetHtmlContentRemoteAs
                 new String[] { String.valueOf(id) },      // The values for the WHERE clause
                 null,                                     // don't group the rows
                 null,                                     // don't filter by row groups
-                sortOrder                                 // The sort order
+                null                                      // The sort order
         );
 
         if (cursor != null) {

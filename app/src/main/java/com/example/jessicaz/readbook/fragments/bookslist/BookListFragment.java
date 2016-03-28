@@ -1,15 +1,12 @@
 package com.example.jessicaz.readbook.fragments.bookslist;
 
 import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -24,7 +21,6 @@ import android.widget.Toast;
 import com.example.jessicaz.readbook.AsyncTack.GetBooksRemoteAsyncTack;
 import com.example.jessicaz.readbook.Interface.SwitchFragment;
 import com.example.jessicaz.readbook.R;
-import com.example.jessicaz.readbook.fragments.searchresult.SearchResultFragment;
 import com.example.jessicaz.readbook.helper.DBHelper;
 import com.example.jessicaz.readbook.model.Book;
 
@@ -42,9 +38,9 @@ import butterknife.ButterKnife;
  */
 public class BookListFragment extends Fragment implements GetBooksRemoteAsyncTack.GetBooksRemote, SearchView.OnQueryTextListener, BooksListAdapter.Listener { //Better to use ListFragment?
     @Bind(R.id.book_recyclerview)
-    RecyclerView mRecyclerView;
+    RecyclerView recyclerView;
     @Bind(R.id.loading_spinner)
-    RelativeLayout mSpinner;
+    RelativeLayout spinner;
     @Bind(R.id.state_message)
     TextView stateMessage;
 
@@ -56,7 +52,6 @@ public class BookListFragment extends Fragment implements GetBooksRemoteAsyncTac
     private BooksListAdapter adapter;
 
     private SwitchFragment switchFragment = null;
-    private GetBooksRemoteAsyncTack getBooksRemoteAsyncTask = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -64,13 +59,13 @@ public class BookListFragment extends Fragment implements GetBooksRemoteAsyncTac
         setHasOptionsMenu(true);
 
         startLoadTimestamp = new Date().getTime();
+        switchFragment = (SwitchFragment) getActivity();
         dbHelper = new DBHelper(getActivity());
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.book_list_fragment, container, false);
-        return view;
+        return inflater.inflate(R.layout.book_list_fragment, container, false);
     }
 
     @Override
@@ -84,8 +79,8 @@ public class BookListFragment extends Fragment implements GetBooksRemoteAsyncTac
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
 
-        mRecyclerView.setLayoutManager(linearLayoutManager);
-        mRecyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerView.setAdapter(adapter);
 
         Runnable spinnerDisplay = new Runnable() {
             @Override
@@ -95,7 +90,7 @@ public class BookListFragment extends Fragment implements GetBooksRemoteAsyncTac
                 fadeOutAnimation.setDuration(500);
                 fadeOutAnimation.setFillAfter(true);
 
-                mSpinner.startAnimation(fadeOutAnimation);
+                spinner.startAnimation(fadeOutAnimation);
             }
         };
 
@@ -123,6 +118,7 @@ public class BookListFragment extends Fragment implements GetBooksRemoteAsyncTac
     @Override
     public void onDetach() {
         dbHelper.close();
+        super.onDetach();
     }
 
     @Override
@@ -130,7 +126,6 @@ public class BookListFragment extends Fragment implements GetBooksRemoteAsyncTac
         this.booksList = booksList;
 
         if(booksList == null || booksList.isEmpty()) {
-
             stateMessage.setText(R.string.error_get_book);
             stateMessage.setVisibility(View.VISIBLE);
         } else {
@@ -153,7 +148,7 @@ public class BookListFragment extends Fragment implements GetBooksRemoteAsyncTac
         if(query == null) {
             Toast.makeText(getActivity(), R.string.error_get_book, Toast.LENGTH_LONG).show();
         } else {
-            switchFragment.switchToSearchResultFragment(query);
+            switchFragment.switchToSearchResultFragment(query.toLowerCase());
         }
 
         return true;
@@ -174,7 +169,6 @@ public class BookListFragment extends Fragment implements GetBooksRemoteAsyncTac
             bookPath = book.getBookURL();
         }
 
-        switchFragment = (SwitchFragment) getActivity();
         switchFragment.switchToBookContentFragment(bookPath);
     }
 
@@ -186,7 +180,7 @@ public class BookListFragment extends Fragment implements GetBooksRemoteAsyncTac
                 if(dbHelper.checkData()) {
                     booksList.clear();
                     int size = dbHelper.getCount();
-                    for(int i = 1; i <= size; i++) {
+                    for(int i = 0; i < size; i++) {
                         booksList.add(dbHelper.getBook(i));
                     }
                     Collections.sort(this.booksList);
@@ -197,7 +191,7 @@ public class BookListFragment extends Fragment implements GetBooksRemoteAsyncTac
             }
         }
 
-        getBooksRemoteAsyncTask = new GetBooksRemoteAsyncTack(this);
+        GetBooksRemoteAsyncTack getBooksRemoteAsyncTask = new GetBooksRemoteAsyncTack(this);
         getBooksRemoteAsyncTask.execute();
     }
 }

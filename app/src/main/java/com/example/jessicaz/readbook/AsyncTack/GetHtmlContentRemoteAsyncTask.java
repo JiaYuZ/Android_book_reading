@@ -29,7 +29,6 @@ public class GetHtmlContentRemoteAsyncTask extends AsyncTask<Void, Void, File> {
         void onContentReceived(File file, Book book);
     }
 
-
     public GetHtmlContentRemoteAsyncTask(Context context, GetHtmlContentRemote getHtmlContentRemote, Book book) {
         this.getHtmlContentRemote = getHtmlContentRemote;
         this.book = book;

@@ -60,12 +60,14 @@ public class BookContentFragment extends Fragment {
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.book_content_fragment, container, false);
-        ButterKnife.bind(this, view);
+        return inflater.inflate(R.layout.book_content_fragment, container, false);
+    }
 
-        webView.getSettings().setLoadWithOverviewMode(true);
-        webView.loadUrl(bookURL);
-        webView.requestFocus();
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        ButterKnife.bind(this, view);
 
         Runnable spinnerDisplay = new Runnable() {
             @Override
@@ -88,7 +90,9 @@ public class BookContentFragment extends Fragment {
             sHandler.postDelayed(spinnerDisplay, 1000 - diff);
         }
 
-        return view;
+        webView.getSettings().setLoadWithOverviewMode(true);
+        webView.loadUrl(bookURL);
+        webView.requestFocus();
     }
 }
 

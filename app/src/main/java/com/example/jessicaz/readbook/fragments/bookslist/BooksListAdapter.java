@@ -5,11 +5,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.jessicaz.readbook.R;
 import com.example.jessicaz.readbook.model.Book;
-import com.loopj.android.image.SmartImageView;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ import butterknife.ButterKnife;
  */
 public class BooksListAdapter extends RecyclerView.Adapter<BooksListAdapter.ViewHolder> {
     private final LayoutInflater inflater;
+    private Context context;
     private List<Book> booksList;
     private Listener listener;
 
@@ -32,6 +34,7 @@ public class BooksListAdapter extends RecyclerView.Adapter<BooksListAdapter.View
         inflater = LayoutInflater.from(context);
         this.booksList = booksList;
         this.listener = listener;
+        this.context = context;
     }
 
     @Override
@@ -42,7 +45,7 @@ public class BooksListAdapter extends RecyclerView.Adapter<BooksListAdapter.View
 
     @Override
     public void onBindViewHolder(final BooksListAdapter.ViewHolder viewHolder,final int position) {
-        viewHolder.bookImage.setImageUrl(booksList.get(position).getBookImageURL());
+        Picasso.with(context).load(booksList.get(position).getBookImageURL()).into(viewHolder.bookImage);
         viewHolder.bookName.setText(booksList.get(position).getBookName());
         viewHolder.authorName.setText(booksList.get(position).getAuthorName());
 
@@ -55,9 +58,12 @@ public class BooksListAdapter extends RecyclerView.Adapter<BooksListAdapter.View
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
-        @Bind(R.id.book_image) SmartImageView bookImage;
-        @Bind(R.id.book_name_textview) TextView bookName;
-        @Bind(R.id.author_name_textview) TextView authorName;
+        @Bind(R.id.book_image)
+        ImageView bookImage;
+        @Bind(R.id.book_name_textview)
+        TextView bookName;
+        @Bind(R.id.author_name_textview)
+        TextView authorName;
 
         public ViewHolder(View bookInfoLayoutView){
             super(bookInfoLayoutView);

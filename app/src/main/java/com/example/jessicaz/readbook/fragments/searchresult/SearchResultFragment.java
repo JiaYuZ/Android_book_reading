@@ -42,13 +42,12 @@ public class SearchResultFragment extends Fragment implements SearchResultAdapte
     GetSearchResultAsyncTask getSearchResultAsyncTask;
     String query;
 
-    private static final String TYPE_REMOTE = "remote";
-    private static final String TYPE_LOCAL = "local";
+    private static final String TYPE_REMOTE = "REMOTE BOOKS";
+    private static final String TYPE_LOCAL = "LOCAL BOOKS";
     private static Handler sHandler = new Handler();
     private long startLoadTimestamp;
 
     private DBHelper dbHelper;
-    private SwitchFragment switchFragment = null;
 
     public SearchResultFragment(){
 
@@ -77,7 +76,6 @@ public class SearchResultFragment extends Fragment implements SearchResultAdapte
 
         dbHelper = new DBHelper(getActivity());
         startLoadTimestamp = new Date().getTime();
-        getSearchResultAsyncTask = new GetSearchResultAsyncTask(this, query);
     }
 
     @Override
@@ -121,9 +119,9 @@ public class SearchResultFragment extends Fragment implements SearchResultAdapte
             sHandler.postDelayed(spinnerDisplay, 1000 - diff);
         }
 
+        getSearchResultAsyncTask = new GetSearchResultAsyncTask(this, query);
         getSearchResultAsyncTask.execute();
     }
-
 
     public void openBook(Book book) {
         String bookPath;
@@ -135,7 +133,7 @@ public class SearchResultFragment extends Fragment implements SearchResultAdapte
             bookPath = book.getBookURL();
         }
 
-        switchFragment = (SwitchFragment) getActivity();
+        SwitchFragment switchFragment = (SwitchFragment) getActivity();
         switchFragment.switchToBookContentFragment(bookPath);
     }
 

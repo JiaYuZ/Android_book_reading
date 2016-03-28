@@ -22,17 +22,18 @@ import butterknife.ButterKnife;
  * Created by JessicaZ on 9/24/15.
  */
 public class BookContentFragment extends Fragment {
-    private String bookURL;
-    private long startLoadTimestamp;
-
     @Bind(R.id.book_content_webview)
     WebView webView;
     @Bind(R.id.loading_spinner)
     RelativeLayout spinner;
 
+    private String bookURL;
+    private long startLoadTimestamp;
     private static Handler sHandler = new Handler();
 
-    public BookContentFragment(){}
+    public BookContentFragment(){
+
+    }
 
     public static BookContentFragment newInstance(String bookURL) {
         BookContentFragment bookContentFragment = new BookContentFragment();
@@ -49,7 +50,7 @@ public class BookContentFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         Bundle arg = getArguments();
-        if(arg != null){
+        if(arg != null) {
             bookURL = arg.getString("bookURL");
         }
 

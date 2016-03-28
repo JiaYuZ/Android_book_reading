@@ -12,7 +12,8 @@
     <string name="search_hint">Search...</string>
 
     <string name="error_get_book">Cannot get book list.</string>
-    <string name="error_empty_search_query">Cannot search with empty input !</string>
+    <string name="error_empty_search_query">Cannot search with empty input!</string>
+    <string name="error_no_search_result">No book founded.</string>
 
     <string name="user_name_edittext">User Name</string>
     <string name="password_edittext">Password</string>

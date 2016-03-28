@@ -12,7 +12,7 @@ public class BookList {
 
     public static abstract class BookEntry implements BaseColumns {
         public static final String TABLE_BOOKS = "booktable";
-        public static final String ROW_ID = "id";
+
         public static final String ROW_BOOK_ID = "bookid";
         public static final String ROW_BOOK_NAME = "bookname";
         public static final String ROW_BOOK_URL = "bookurl";

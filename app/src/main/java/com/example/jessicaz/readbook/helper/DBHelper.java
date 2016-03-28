@@ -5,8 +5,10 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.widget.Toast;
 
 import com.example.jessicaz.readbook.AsyncTack.GetHtmlContentRemoteAsyncTask;
+import com.example.jessicaz.readbook.R;
 import com.example.jessicaz.readbook.model.Book;
 
 import java.io.File;
@@ -26,8 +28,7 @@ public class DBHelper extends SQLiteOpenHelper implements GetHtmlContentRemoteAs
     private static final String COMMA = ",";
 
     private static final String CREATE_TABLE_BOOKS = "CREATE TABLE " + BookList.BookEntry.TABLE_BOOKS +
-            "(" + BookList.BookEntry.ROW_ID + " INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
-                + BookList.BookEntry.ROW_BOOK_ID + INT_TYPE + COMMA
+            "(" + BookList.BookEntry.ROW_BOOK_ID + " INTEGER PRIMARY KEY,"
                 + BookList.BookEntry.ROW_BOOK_NAME + TEXT_TYPE + COMMA
                 + BookList.BookEntry.ROW_BOOK_URL + TEXT_TYPE + COMMA
                 + BookList.BookEntry.ROW_AUTHOR_NAME + TEXT_TYPE + COMMA
@@ -62,9 +63,9 @@ public class DBHelper extends SQLiteOpenHelper implements GetHtmlContentRemoteAs
         onCreate(db);
     }
 
-    private static final String[] COLUMNS = { BookList.BookEntry.ROW_ID, BookList.BookEntry.ROW_BOOK_ID,
-            BookList.BookEntry.ROW_BOOK_NAME, BookList.BookEntry.ROW_BOOK_URL, BookList.BookEntry.ROW_AUTHOR_NAME,
-            BookList.BookEntry.ROW_BOOK_IMAGE_URL, BookList.BookEntry.ROW_BOOK_PATH, BookList.BookEntry.ROW_BOOK_VISIT_COUNT };
+    private static final String[] COLUMNS = { BookList.BookEntry.ROW_BOOK_ID, BookList.BookEntry.ROW_BOOK_NAME,
+            BookList.BookEntry.ROW_BOOK_URL, BookList.BookEntry.ROW_AUTHOR_NAME, BookList.BookEntry.ROW_BOOK_IMAGE_URL,
+            BookList.BookEntry.ROW_BOOK_PATH, BookList.BookEntry.ROW_BOOK_VISIT_COUNT };
 
     public void addBook(Book book) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -81,15 +82,15 @@ public class DBHelper extends SQLiteOpenHelper implements GetHtmlContentRemoteAs
         db.close();
     }
 
-    public Book getBook(int id) {
+    public Book getBook(int bookId) {
         SQLiteDatabase db = this.getReadableDatabase();
         Book book = new Book();
 
         Cursor cursor = db.query(
                 BookList.BookEntry.TABLE_BOOKS,           // The table to query
                 COLUMNS,                                  // The columns to return
-                BookList.BookEntry.ROW_ID + " =? ",       // The columns for the WHERE clause
-                new String[] { String.valueOf(id) },      // The values for the WHERE clause
+                BookList.BookEntry.ROW_BOOK_ID + " =? ",       // The columns for the WHERE clause
+                new String[] { String.valueOf(bookId) },      // The values for the WHERE clause
                 null,                                     // don't group the rows
                 null,                                     // don't filter by row groups
                 null                                      // The sort order
@@ -98,12 +99,12 @@ public class DBHelper extends SQLiteOpenHelper implements GetHtmlContentRemoteAs
         if (cursor != null) {
             cursor.moveToFirst();
 
-            book.setId(cursor.getInt(1));
-            book.setBookName(cursor.getString(2));
-            book.setBookURL(cursor.getString(3));
-            book.setAuthorName(cursor.getString(4));
-            book.setBookImageURL(cursor.getString(5));
-            book.setBookVisitCount(cursor.getInt(7));
+            book.setId(cursor.getInt(0));
+            book.setBookName(cursor.getString(1));
+            book.setBookURL(cursor.getString(2));
+            book.setAuthorName(cursor.getString(3));
+            book.setBookImageURL(cursor.getString(4));
+            book.setBookVisitCount(cursor.getInt(6));
 
             cursor.close();
         }
@@ -258,6 +259,10 @@ public class DBHelper extends SQLiteOpenHelper implements GetHtmlContentRemoteAs
 
     @Override
     public void onContentReceived(File file, Book book) {
-        insertPath(file, book);
+        if(file == null) {
+            Toast.makeText(context, R.string.error_get_book, Toast.LENGTH_LONG).show();
+        } else {
+            insertPath(file, book);
+        }
     }
 }

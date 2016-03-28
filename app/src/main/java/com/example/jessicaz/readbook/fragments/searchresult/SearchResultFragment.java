@@ -1,24 +1,26 @@
 package com.example.jessicaz.readbook.fragments.searchresult;
 
 import android.app.Fragment;
-import android.content.ClipData;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
+import android.view.animation.AlphaAnimation;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
-import com.example.jessicaz.readbook.AsyncTack.GetBooksRemoteAsyncTack;
 import com.example.jessicaz.readbook.AsyncTack.GetSearchResultAsyncTask;
 import com.example.jessicaz.readbook.Interface.SwitchFragment;
 import com.example.jessicaz.readbook.R;
 import com.example.jessicaz.readbook.helper.DBHelper;
 import com.example.jessicaz.readbook.model.Book;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import butterknife.Bind;
@@ -30,12 +32,20 @@ import butterknife.ButterKnife;
 public class SearchResultFragment extends Fragment implements SearchResultAdapter.Listener, GetSearchResultAsyncTask.GetSearchResult {
     @Bind(R.id.search_result_recyclerview)
     RecyclerView recyclerView;
+    @Bind(R.id.loading_spinner)
+    RelativeLayout spinner;
+    @Bind(R.id.state_message)
+    TextView stateMessage;
 
     SearchResultAdapter adapter;
     List<Book> booksList = new ArrayList<>();
-    List<String> headerList = new ArrayList<>();
     GetSearchResultAsyncTask getSearchResultAsyncTask;
     String query;
+
+    private static final String TYPE_REMOTE = "remote";
+    private static final String TYPE_LOCAL = "local";
+    private static Handler sHandler = new Handler();
+    private long startLoadTimestamp;
 
     private DBHelper dbHelper;
     private SwitchFragment switchFragment = null;
@@ -66,17 +76,14 @@ public class SearchResultFragment extends Fragment implements SearchResultAdapte
         }
 
         dbHelper = new DBHelper(getActivity());
+        startLoadTimestamp = new Date().getTime();
         getSearchResultAsyncTask = new GetSearchResultAsyncTask(this, query);
-        getSearchResultAsyncTask.execute();
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         //Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.search_result_fragment, container, false);
-
-        return view;
+        return inflater.inflate(R.layout.search_result_fragment, container, false);
     }
 
     @Override
@@ -86,6 +93,35 @@ public class SearchResultFragment extends Fragment implements SearchResultAdapte
         ButterKnife.bind(this,view);
 
         adapter = new SearchResultAdapter(getActivity(), new ArrayList<SearchResultAdapter.Item>(), this);
+
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+
+        recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerView.setAdapter(adapter);
+
+        Runnable spinnerDisplay = new Runnable() {
+            @Override
+            public void run() {
+                AlphaAnimation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
+                fadeOutAnimation.setStartOffset(1000);
+                fadeOutAnimation.setDuration(500);
+                fadeOutAnimation.setFillAfter(true);
+
+                spinner.startAnimation(fadeOutAnimation);
+            }
+        };
+
+        long nowTimestamp = new Date().getTime();
+        long diff = nowTimestamp - startLoadTimestamp;
+
+        if(diff > 1000) {
+            spinnerDisplay.run();
+        } else {
+            sHandler.postDelayed(spinnerDisplay, 1000 - diff);
+        }
+
+        getSearchResultAsyncTask.execute();
     }
 
 
@@ -109,31 +145,62 @@ public class SearchResultFragment extends Fragment implements SearchResultAdapte
     }
 
     public void getSearchResultBooksList(List<Book> booksList) {
-       List<SearchResultAdapter.Item> items = new ArrayList<>();
+        this.booksList = booksList;
+
+        List<SearchResultAdapter.Item> items = new ArrayList<>();
+        SearchResultAdapter.Item localResult = new SearchResultAdapter.HeaderItem(TYPE_LOCAL);
+        SearchResultAdapter.Item remoteResult = new SearchResultAdapter.HeaderItem(TYPE_REMOTE);
+
+        Collections.sort(this.booksList);
+
+        items.add(localResult);
+        items.addAll(filter(this.booksList, TYPE_LOCAL));
+        items.add(remoteResult);
+        items.addAll(filter(this.booksList, TYPE_REMOTE));
+
+        adapter.setItemList(items);
+        adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onResultReceived(List<Book> booksList) {
+        if(booksList == null || booksList.isEmpty()) {
+            stateMessage.setVisibility(View.VISIBLE);
+            stateMessage.setText(R.string.error_no_search_result);
+        } else {
+            getSearchResultBooksList(booksList);
+        }
+    }
+
+    private List<SearchResultAdapter.Item> filter(List<Book> booksList, String type) {
+        List<SearchResultAdapter.Item> localItems = new ArrayList<>();
+        List<SearchResultAdapter.Item> remoteItems = new ArrayList<>();
 
         if (dbHelper.checkDatabase()) {
             dbHelper.openDatabase();
 
             if (dbHelper.checkTable()) {
                 if (dbHelper.checkData()) {
-                    int size = dbHelper.getCount();
+                    int size = booksList.size();
 
-                    for (int i = 1; i <= size; i++) {
-                        SearchResultAdapter.Item book = new SearchResultAdapter.BookItem(dbHelper.getBook(i));
-                        items.add(book);
+                    for (int i = 0; i < size; i++) {
+                        Book book = dbHelper.getBook(booksList.get(i).getId());
+                        SearchResultAdapter.Item bookItem = new SearchResultAdapter.BookItem(book);
+
+                        if(book.getBookVisitCount() > 0) {
+                            localItems.add(bookItem);
+                        } else {
+                            remoteItems.add(bookItem);
+                        }
                     }
-                    Collections.sort(this.booksList);
-                    adapter.setItemList(items);
-                    adapter.notifyDataSetChanged();
                 }
             }
         }
-    }
 
-    @Override
-    public void onResultReceived(List<Book> bookList) {
-        this.booksList = bookList;
-
-        getSearchResultBooksList(bookList);
+        if(type.equals(TYPE_LOCAL)) {
+            return localItems;
+        } else {
+            return remoteItems;
+        }
     }
 }

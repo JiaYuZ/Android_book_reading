@@ -30,7 +30,7 @@ public class GetSearchResultAsyncTask extends AsyncTask<Void, Void, List<Book>>{
         this.getSearchResult = getSearchResult;
         this.query = query;
 
-        Retrofit retrofit = new Retrofit.Builder().baseUrl(BuildConfig.BOOKS_JSON_OBJECT_URL)
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(BuildConfig.BOOKS_SEARCH_RESULT_URL)
                 .addConverterFactory(GsonConverterFactory.create()).build();
         service = retrofit.create(BookService.class);
     }

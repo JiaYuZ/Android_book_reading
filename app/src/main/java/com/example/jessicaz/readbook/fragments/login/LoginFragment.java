@@ -47,7 +47,7 @@ public class LoginFragment extends Fragment {
             this.password = password;
 
             Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl(BuildConfig.BOOKS_JSON_OBJECT_URL)
+                    .baseUrl(BuildConfig.BOOK_SERVICE_BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
             service = retrofit.create(BookService.class);

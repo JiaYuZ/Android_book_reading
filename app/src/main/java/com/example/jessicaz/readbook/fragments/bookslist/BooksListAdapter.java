@@ -37,27 +37,26 @@ public class BooksListAdapter extends RecyclerView.Adapter<BooksListAdapter.View
         this.context = context;
     }
 
+    public abstract static class ViewHolder extends RecyclerView.ViewHolder {
+        public ViewHolder(View view) {
+            super(view);
+        }
+
+        abstract void takeBook(Book book);
+    }
+
     @Override
     public BooksListAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         final View bookInfoLayoutView = inflater.inflate(R.layout.book_list_row, viewGroup, false);
-        return new ViewHolder(bookInfoLayoutView);
+        return new bookViewHolder(bookInfoLayoutView);
     }
 
     @Override
     public void onBindViewHolder(final BooksListAdapter.ViewHolder viewHolder,final int position) {
-        Picasso.with(context).load(booksList.get(position).getBookImageURL()).into(viewHolder.bookImage);
-        viewHolder.bookName.setText(booksList.get(position).getBookName());
-        viewHolder.authorName.setText(booksList.get(position).getAuthorName());
-
-        viewHolder.bookName.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                listener.onBookClick(booksList.get(position));
-            }
-        });
+        viewHolder.takeBook(booksList.get(position));
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder{
+    public class bookViewHolder extends ViewHolder{
         @Bind(R.id.book_image)
         ImageView bookImage;
         @Bind(R.id.book_name_textview)
@@ -65,9 +64,23 @@ public class BooksListAdapter extends RecyclerView.Adapter<BooksListAdapter.View
         @Bind(R.id.author_name_textview)
         TextView authorName;
 
-        public ViewHolder(View bookInfoLayoutView){
+        public bookViewHolder(View bookInfoLayoutView){
             super(bookInfoLayoutView);
             ButterKnife.bind(this, bookInfoLayoutView);
+        }
+
+        @Override
+        void takeBook(final Book book) {
+            Picasso.with(context).load(book.getBookImageURL().trim()).into(bookImage);
+            bookName.setText(book.getBookName());
+            authorName.setText(book.getAuthorName());
+
+            bookName.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onBookClick(book);
+                }
+            });
         }
     }
 
@@ -82,5 +95,9 @@ public class BooksListAdapter extends RecyclerView.Adapter<BooksListAdapter.View
 
     public void setBooksList(List<Book> booksList) {
         this.booksList = booksList;
+    }
+
+    public List<Book> getItemList(){
+        return booksList;
     }
 }

@@ -13,6 +13,8 @@ import android.webkit.WebViewClient;
 import android.widget.RelativeLayout;
 
 import com.example.jessicaz.readbook.R;
+import com.example.jessicaz.readbook.helper.DBHelper;
+import com.example.jessicaz.readbook.model.Book;
 
 import java.util.Date;
 
@@ -30,22 +32,28 @@ public class BookContentFragment extends Fragment {
 
     private static final String BUNDLE_KEY_BOOK_PATH = "bookPath";
     private static final String BUNDLE_KEY_BOOK_NAME = "bookName";
+    private static final String BUNDLE_KEY_BOOK_ID = "bookId";
+
+    private static Handler sHandler = new Handler();
+    private long startLoadTimestamp;
 
     private String bookURL;
     private String bookName;
-    private long startLoadTimestamp;
-    private static Handler sHandler = new Handler();
+    private int bookId;
+    private DBHelper dbHelper;
+    private int scrollY = 0;
 
     public BookContentFragment(){
 
     }
 
-    public static BookContentFragment newInstance(String bookPath, String bookName) {
+    public static BookContentFragment newInstance(String bookPath, Book book) {
         BookContentFragment bookContentFragment = new BookContentFragment();
         Bundle args = new Bundle();
 
         args.putString(BUNDLE_KEY_BOOK_PATH, bookPath);
-        args.putString(BUNDLE_KEY_BOOK_NAME, bookName);
+        args.putString(BUNDLE_KEY_BOOK_NAME, book.getBookName());
+        args.putInt(BUNDLE_KEY_BOOK_ID, book.getId());
         bookContentFragment.setArguments(args);
 
         return bookContentFragment;
@@ -59,9 +67,13 @@ public class BookContentFragment extends Fragment {
         if(arg != null) {
             bookURL = arg.getString(BUNDLE_KEY_BOOK_PATH);
             bookName = arg.getString(BUNDLE_KEY_BOOK_NAME);
+            bookId = arg.getInt(BUNDLE_KEY_BOOK_ID);
         }
 
+        dbHelper = new DBHelper(getActivity());
         startLoadTimestamp = new Date().getTime();
+        dbHelper.openDatabase();
+        scrollY = dbHelper.getScrollY(bookId);
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -77,6 +89,13 @@ public class BookContentFragment extends Fragment {
         ButterKnife.bind(this, view);
 
         webView.getSettings().setLoadWithOverviewMode(true);
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+               super.onPageFinished(view, url);
+               webView.scrollTo(0, scrollY);
+            }
+        });
         webView.loadUrl(bookURL);
         webView.requestFocus();
 
@@ -100,6 +119,12 @@ public class BookContentFragment extends Fragment {
         } else {
             sHandler.postDelayed(spinnerDisplay, 1000 - diff);
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        dbHelper.updateScrollY(bookId, webView.getScrollY());
     }
 
     @Override

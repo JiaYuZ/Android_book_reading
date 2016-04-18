@@ -21,7 +21,7 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField "String", "BOOK_SERVICE_BASE_URL", '"http://2466427d.ngrok.io"'
+            buildConfigField "String", "BOOK_SERVICE_BASE_URL", '"http://a664faee.ngrok.io"'
             debuggable true
         }
         client{

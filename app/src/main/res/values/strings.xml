@@ -2,21 +2,21 @@
     <string name="app_name">JessiReader</string>
 
     <string name="about">About</string>
-    <string name="go_to_gutenberg">Go To Gutenberg</string>
+    <string name="go_to_gutenberg">Go to Gutenberg</string>
 
-    <string name="version">Veision: 1.0.0</string>
+    <string name="version">Version: 1.0.0</string>
     <string name="developer">Jessica Zeng @Grio</string>
 
-    <string name="search_title">Search Books By Name</string>
-
-    <string name="search_hint">Search...</string>
+    <string name="search_title">Search books by name</string>
+    <string name="search_result">Search result</string>
+    <string name="search_hint">Search…</string>
 
     <string name="error_get_book">Cannot get book list.</string>
     <string name="error_empty_search_query">Cannot search with empty input!</string>
     <string name="error_no_search_result">No book founded.</string>
 
-    <string name="user_name_edittext">User Name</string>
+    <string name="user_name_edittext">Username</string>
     <string name="password_edittext">Password</string>
-    <string name="login_botton">Login</string>
+    <string name="login_button">Login</string>
 
 </resources>

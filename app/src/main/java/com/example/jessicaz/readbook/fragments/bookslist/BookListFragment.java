@@ -122,6 +122,12 @@ public class BookListFragment extends Fragment implements GetBooksRemoteAsyncTac
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        getActivity().setTitle(getString(R.string.app_name));
+    }
+
+    @Override
     public void onBooksReceived(List<Book> booksList) {
         this.booksList = booksList;
 

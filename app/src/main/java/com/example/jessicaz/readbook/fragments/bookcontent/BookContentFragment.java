@@ -89,10 +89,12 @@ public class BookContentFragment extends Fragment {
         } else {
             sHandler.postDelayed(spinnerDisplay, 1000 - diff);
         }
+    }
 
-        webView.getSettings().setLoadWithOverviewMode(true);
-        webView.loadUrl(bookURL);
-        webView.requestFocus();
+    @Override
+    public void onResume() {
+        super.onResume();
+        getActivity().setTitle(bookName);
     }
 }
 

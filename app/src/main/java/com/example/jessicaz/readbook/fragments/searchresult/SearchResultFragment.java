@@ -121,6 +121,11 @@ public class SearchResultFragment extends Fragment implements SearchResultAdapte
 
         getSearchResultAsyncTask = new GetSearchResultAsyncTask(this, query);
         getSearchResultAsyncTask.execute();
+    @Override
+    public void onResume() {
+        super.onResume();
+        getActivity().setTitle(getString(R.string.search_result));
+    }
     }
 
     public void openBook(Book book) {

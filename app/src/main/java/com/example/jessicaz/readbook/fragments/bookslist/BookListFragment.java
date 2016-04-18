@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 import com.example.jessicaz.readbook.AsyncTack.GetBooksRemoteAsyncTack;
 import com.example.jessicaz.readbook.Interface.SwitchFragment;
 import com.example.jessicaz.readbook.R;
+import com.example.jessicaz.readbook.activity.MainActivity;
 import com.example.jessicaz.readbook.helper.DBHelper;
 import com.example.jessicaz.readbook.model.Book;
 
@@ -82,37 +84,20 @@ public class BookListFragment extends Fragment implements GetBooksRemoteAsyncTac
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(adapter);
 
-        Runnable spinnerDisplay = new Runnable() {
-            @Override
-            public void run() {
-                AlphaAnimation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
-                fadeOutAnimation.setStartOffset(1000);
-                fadeOutAnimation.setDuration(500);
-                fadeOutAnimation.setFillAfter(true);
-
-                spinner.startAnimation(fadeOutAnimation);
-            }
-        };
-
-        long nowTimestamp = new Date().getTime();
-        long diff = nowTimestamp - startLoadTimestamp;
-
-        if(diff > 1000) {
-            spinnerDisplay.run();
-        } else {
-            sHandler.postDelayed(spinnerDisplay, 1000 - diff);
-        }
-
         getBooksList();
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater){
-        menuInflater.inflate(R.menu.menu_search, menu);
+        if(menu.findItem(R.id.search) == null) {
+            menuInflater.inflate(R.menu.menu_search, menu);
 
-        final MenuItem item = menu.findItem(R.id.search);
-        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(item);
-        searchView.setOnQueryTextListener(this);
+            final MenuItem item = menu.findItem(R.id.search);
+            final SearchView searchView = (SearchView) MenuItemCompat.getActionView(item);
+            searchView.setOnQueryTextListener(this);
+        }
+
+        super.onCreateOptionsMenu(menu, menuInflater);
     }
 
     @Override
@@ -175,10 +160,31 @@ public class BookListFragment extends Fragment implements GetBooksRemoteAsyncTac
             bookPath = book.getBookURL();
         }
 
-        switchFragment.switchToBookContentFragment(bookPath);
+        switchFragment.switchToBookContentFragment(bookPath, book.getBookName());
     }
 
     public void getBooksList() {
+        Runnable spinnerDisplay = new Runnable() {
+            @Override
+            public void run() {
+                AlphaAnimation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
+                fadeOutAnimation.setStartOffset(1000);
+                fadeOutAnimation.setDuration(500);
+                fadeOutAnimation.setFillAfter(true);
+
+                spinner.startAnimation(fadeOutAnimation);
+            }
+        };
+
+        long nowTimestamp = new Date().getTime();
+        long diff = nowTimestamp - startLoadTimestamp;
+
+        if(diff > 1000) {
+            spinnerDisplay.run();
+        } else {
+            sHandler.postDelayed(spinnerDisplay, 1000 - diff);
+        }
+
         if(dbHelper.checkDatabase()) {
             dbHelper.openDatabase();
 

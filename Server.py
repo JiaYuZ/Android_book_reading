@@ -8,7 +8,7 @@ from urllib2 import urlopen
 
 app = Flask(__name__)
 app.debug = True
-URLHeader =  "http://deb916d7.ngrok.io"
+URLHeader =  "http://2466427d.ngrok.io"
 
 #login_manager = LoginManager()
 #login_manager.init_app(app)
@@ -25,7 +25,7 @@ def getBooksJson():
         #Filter html file under the director
         if booksList[index].endswith(".html"):
 
-            book = BeautifulSoup(open('static/ChallengeBooks/'+booksList[index]))
+            book = BeautifulSoup(open('static/ChallengeBooks/'+booksList[index]), "html.parser")
             bookName = book.title.string
             authorName = book.h4.find_next(re.compile('^h')).string
             bookURL = URLHeader+url_for('static', filename='ChallengeBooks/')+booksList[index]
@@ -48,7 +48,7 @@ def getSearchResultJson():
     #Filter html file under the director
         if booksList[index].endswith(".html"):
 
-            book = BeautifulSoup(open('static/ChallengeBooks/'+booksList[index]))
+            book = BeautifulSoup(open('static/ChallengeBooks/'+booksList[index]), "html.parser")
             bookName = book.title.string
             authorName = book.h4.find_next(re.compile('^h')).string
             bookURL = URLHeader+url_for('static', filename='ChallengeBooks/')+booksList[index]

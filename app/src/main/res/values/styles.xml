@@ -25,4 +25,10 @@
         <item name="android:textStyle">italic</item>
         <item name="android:textColor">@color/Gray</item>
     </style>
+
+    <style name="NoResultTextStyle">
+        <item name="android:textStyle">normal|italic</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/DarkGray</item>
+    </style>
 </resources>

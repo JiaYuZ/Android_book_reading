@@ -1,6 +1,7 @@
 package com.example.jessicaz.readbook.fragments.searchresult;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.widget.LinearLayoutManager;
@@ -9,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -44,6 +46,7 @@ public class SearchResultFragment extends Fragment implements SearchResultAdapte
 
     private static final String TYPE_REMOTE = "REMOTE BOOKS";
     private static final String TYPE_LOCAL = "LOCAL BOOKS";
+    private static final String TYPE_NO_RESULT = "No result founded";
     private static Handler sHandler = new Handler();
     private long startLoadTimestamp;
 
@@ -68,6 +71,7 @@ public class SearchResultFragment extends Fragment implements SearchResultAdapte
         super.onCreate(savedInstanceState);
         //If has OptionMenu don't set
         setHasOptionsMenu(true);
+        hideSoftKeyboard();
 
         Bundle arg = getArguments();
         if(arg != null) {
@@ -90,13 +94,16 @@ public class SearchResultFragment extends Fragment implements SearchResultAdapte
 
         ButterKnife.bind(this,view);
 
-        adapter = new SearchResultAdapter(getActivity(), new ArrayList<SearchResultAdapter.Item>(), this);
+        adapter = new SearchResultAdapter(getActivity(), new ArrayList<SearchResultAdapter.Item>(), query, this);
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
 
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(adapter);
+
+        getSearchResultAsyncTask = new GetSearchResultAsyncTask(this, query);
+        getSearchResultAsyncTask.execute();
 
         Runnable spinnerDisplay = new Runnable() {
             @Override
@@ -118,9 +125,20 @@ public class SearchResultFragment extends Fragment implements SearchResultAdapte
         } else {
             sHandler.postDelayed(spinnerDisplay, 1000 - diff);
         }
+    }
 
-        getSearchResultAsyncTask = new GetSearchResultAsyncTask(this, query);
-        getSearchResultAsyncTask.execute();
+    @Override
+    public void onResume() {
+        super.onResume();
+        getActivity().setTitle(getString(R.string.search_result));
+    }
+
+    public void hideSoftKeyboard() {
+        if(getActivity().getCurrentFocus()!=null) {
+            getActivity();
+            InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
+        }
     }
 
     public void openBook(Book book) {
@@ -134,7 +152,7 @@ public class SearchResultFragment extends Fragment implements SearchResultAdapte
         }
 
         SwitchFragment switchFragment = (SwitchFragment) getActivity();
-        switchFragment.switchToBookContentFragment(bookPath);
+        switchFragment.switchToBookContentFragment(bookPath, book.getBookName());
     }
 
     @Override
@@ -146,15 +164,34 @@ public class SearchResultFragment extends Fragment implements SearchResultAdapte
         this.booksList = booksList;
 
         List<SearchResultAdapter.Item> items = new ArrayList<>();
+        List<SearchResultAdapter.Item> localBooks = new ArrayList<>();
+        List<SearchResultAdapter.Item> remoteBooks = new ArrayList<>();
         SearchResultAdapter.Item localResult = new SearchResultAdapter.HeaderItem(TYPE_LOCAL);
         SearchResultAdapter.Item remoteResult = new SearchResultAdapter.HeaderItem(TYPE_REMOTE);
+        SearchResultAdapter.Item noResult = new SearchResultAdapter.NoResultItem(TYPE_NO_RESULT);
+
+        items.clear();
+        localBooks.clear();
+        remoteBooks.clear();
 
         Collections.sort(this.booksList);
 
+        localBooks.addAll(filter(this.booksList, TYPE_LOCAL));
+        remoteBooks.addAll(filter(this.booksList, TYPE_REMOTE));
+
         items.add(localResult);
-        items.addAll(filter(this.booksList, TYPE_LOCAL));
+        if(localBooks.isEmpty()) {
+            items.add(noResult);
+        } else {
+            items.addAll(localBooks);
+        }
+
         items.add(remoteResult);
-        items.addAll(filter(this.booksList, TYPE_REMOTE));
+        if(remoteBooks.isEmpty()) {
+            items.add(noResult);
+        } else {
+            items.addAll(remoteBooks);
+        }
 
         adapter.setItemList(items);
         adapter.notifyDataSetChanged();
@@ -166,6 +203,7 @@ public class SearchResultFragment extends Fragment implements SearchResultAdapte
             stateMessage.setVisibility(View.VISIBLE);
             stateMessage.setText(R.string.error_no_search_result);
         } else {
+            stateMessage.setVisibility(View.INVISIBLE);
             getSearchResultBooksList(booksList);
         }
     }

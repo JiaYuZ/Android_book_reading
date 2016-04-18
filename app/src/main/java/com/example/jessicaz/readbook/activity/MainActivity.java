@@ -12,33 +12,37 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-
+import com.example.jessicaz.readbook.Interface.SwitchFragment;
 import com.example.jessicaz.readbook.R;
 import com.example.jessicaz.readbook.fragments.about.AboutFragment;
 import com.example.jessicaz.readbook.fragments.bookcontent.BookContentFragment;
 import com.example.jessicaz.readbook.fragments.bookslist.BookListFragment;
-import com.example.jessicaz.readbook.Interface.SwitchFragment;
-import com.example.jessicaz.readbook.fragments.login.LoginFragment;
-import com.example.jessicaz.readbook.fragments.searchresult.SearchResultAdapter;
 import com.example.jessicaz.readbook.fragments.searchresult.SearchResultFragment;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity implements SwitchFragment {
     private FragmentTransaction fragmentTransaction;
     //private LoginFragment loginFragment;
     private BookListFragment bookListFragment;
+    private BookContentFragment bookContentFragment;
+    private SearchResultFragment searchResultFragment;
+    private AboutFragment aboutFragment;
+
+    private List<Fragment> fragmentList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
+        setTitle(getResources().getString(R.string.app_name));
         //loginFragment = new LoginFragment();
         bookListFragment = new BookListFragment();
-
-        fragmentTransaction = getFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.main_layout, bookListFragment);
-        fragmentTransaction.commit();
+        FragmentTransaction(bookListFragment);
     }
 
     @Override
@@ -78,40 +82,41 @@ public class MainActivity extends AppCompatActivity implements SwitchFragment {
         fragmentManager.popBackStack();
     }
 
-    //TODO set title in each fragment
     @Override
     public void switchToBookListFragment() {
-        setTitle(R.string.app_name);
-        BookListFragment bookListFragment = new BookListFragment();
-        fragmentTransaction = getFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.main_layout, bookListFragment).commit();
+        setTitle(getString(R.string.app_name));
+        bookListFragment = new BookListFragment();
+        FragmentTransaction(bookListFragment);
     }
 
     @Override
-    public void switchToBookContentFragment(String bookUrl) {
-        //setTitle(book.getBookName());
+    public void switchToBookContentFragment(String bookPath, String bookName) {
+        setTitle(bookName);
         //Created bookContentFragment with bookURL reference
-        BookContentFragment bookContentFragment = BookContentFragment.newInstance(bookUrl);
+        bookContentFragment = BookContentFragment.newInstance(bookPath, bookName);
         FragmentTransaction(bookContentFragment);
     }
 
     @Override
     public void switchToSearchResultFragment(String query) {
-        SearchResultFragment searchResultFragment = SearchResultFragment.newInstance(query);
+        setTitle(getString(R.string.search_title));
+        searchResultFragment = SearchResultFragment.newInstance(query);
         FragmentTransaction(searchResultFragment);
     }
 
     @Override
     public void switchToAboutFragment() {
-        setTitle("About");
-        AboutFragment aboutFragment = new AboutFragment();
+        setTitle(getString(R.string.about));
+        aboutFragment = new AboutFragment();
         FragmentTransaction(aboutFragment);
     }
 
     private void FragmentTransaction(Fragment fragment){
         fragmentTransaction = getFragmentManager().beginTransaction();
+
         fragmentTransaction.setCustomAnimations(R.animator.slide_in_left, R.animator.slide_out_right,
                 R.animator.slide_in_right, R.animator.slide_out_left);
+
         fragmentTransaction.replace(R.id.main_layout, fragment);
         fragmentTransaction.addToBackStack(null).commit();
     }

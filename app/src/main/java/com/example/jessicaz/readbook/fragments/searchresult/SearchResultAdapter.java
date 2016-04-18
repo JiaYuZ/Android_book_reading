@@ -1,7 +1,11 @@
 package com.example.jessicaz.readbook.fragments.searchresult;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.BackgroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +17,6 @@ import com.example.jessicaz.readbook.model.Book;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
-import java.util.zip.Inflater;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -24,9 +27,11 @@ import butterknife.ButterKnife;
 public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapter.ViewHolder> {
     private static final int HEADER_VIEW_TYPE = 0;
     private static final int BOOK_VIEW_TYPE = 1;
+    private static final int NO_RESULT_VIEW_TYPE = 2;
 
     Context context;
     List<Item> itemList;
+    String query;
     Listener listener;
     LayoutInflater inflater;
 
@@ -46,6 +51,12 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
         void onBookClick(Book book);
     }
 
+    public static class NoResultItem extends Item<String> {
+        public NoResultItem(String object) {
+            super(object);
+        }
+    }
+
     public static class BookItem extends Item<Book> {
         public BookItem(Book object) {
             super(object);
@@ -56,6 +67,24 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
         public HeaderItem(String object) {
             super(object);
         }
+    }
+
+    public class NoResultViewHolder extends ViewHolder<NoResultItem> {
+        @Bind(R.id.no_result_textview)
+        TextView noResultText;
+
+        public NoResultViewHolder(View itemView) {
+            super(itemView);
+            ButterKnife.bind(this, itemView);
+        }
+
+        @Override
+        void takeItem(Item item) {
+            String noResult = (String) item.getItem();
+
+            noResultText.setText(noResult);
+        }
+
     }
 
     public class BookViewHolder extends ViewHolder<BookItem> {
@@ -75,9 +104,9 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
         void takeItem(Item item) {
             final Book book = (Book) item.getItem();
 
-            Picasso.with(context).load(book.getBookImageURL()).into(imageView);
-            bookName.setText(book.getBookName());
-            authorName.setText(book.getAuthorName());
+            Picasso.with(context).load(book.getBookImageURL().trim()).into(imageView);
+            bookName.setText(spannableString(book.getBookName(), query));
+            authorName.setText(spannableString(book.getAuthorName(), query));
 
             bookName.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -105,10 +134,11 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
         }
     }
 
-    public SearchResultAdapter(Context context, List<Item> itemList, Listener listener) {
+    public SearchResultAdapter(Context context, List<Item> itemList, String query, Listener listener) {
         inflater = LayoutInflater.from(context);
         this.context = context;
         this.itemList = itemList;
+        this.query = query;
         this.listener = listener;
     }
 
@@ -130,6 +160,9 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
             case 1:
                 view = inflater.inflate(R.layout.search_result_row, parent, false);
                 return new BookViewHolder(view);
+            case 2:
+                view = inflater.inflate(R.layout.search_result_row_no_result, parent, false);
+                return new NoResultViewHolder(view);
         }
 
         return null;
@@ -157,6 +190,8 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
             return HEADER_VIEW_TYPE;
         } else if(item instanceof BookItem){
             return BOOK_VIEW_TYPE;
+        } else if(item instanceof NoResultItem) {
+            return NO_RESULT_VIEW_TYPE;
         }
 
         return super.getItemViewType(position);
@@ -173,5 +208,17 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
 
     public void setItemList(List<Item> itemList) {
         this.itemList = itemList;
+    }
+
+    public SpannableString spannableString(String string, String query) {
+        if(!string.toLowerCase().contains(query.toLowerCase())) {
+            return new SpannableString(string);
+        }
+        Spannable spannableString = new SpannableString(string);
+        int startIndex = string.toLowerCase().indexOf(query.toLowerCase());
+        int endIndex = startIndex + query.length();
+        spannableString.setSpan(new BackgroundColorSpan(ContextCompat.getColor(context, R.color.Gold)), startIndex, endIndex, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+
+        return new SpannableString(spannableString);
     }
 }

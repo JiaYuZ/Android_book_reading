@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -17,7 +18,9 @@ import com.example.jessicaz.readbook.R;
 import com.example.jessicaz.readbook.fragments.about.AboutFragment;
 import com.example.jessicaz.readbook.fragments.bookcontent.BookContentFragment;
 import com.example.jessicaz.readbook.fragments.bookslist.BookListFragment;
+import com.example.jessicaz.readbook.fragments.login.LoginFragment;
 import com.example.jessicaz.readbook.fragments.searchresult.SearchResultFragment;
+import com.example.jessicaz.readbook.model.Book;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +28,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements SwitchFragment {
     private FragmentTransaction fragmentTransaction;
-    //private LoginFragment loginFragment;
+    private LoginFragment loginFragment;
     private BookListFragment bookListFragment;
     private BookContentFragment bookContentFragment;
     private SearchResultFragment searchResultFragment;
@@ -40,9 +43,15 @@ public class MainActivity extends AppCompatActivity implements SwitchFragment {
         setContentView(R.layout.activity_main);
 
         setTitle(getResources().getString(R.string.app_name));
-        //loginFragment = new LoginFragment();
-        bookListFragment = new BookListFragment();
-        FragmentTransaction(bookListFragment);
+
+        SharedPreferences shared = getSharedPreferences("shared", MODE_PRIVATE);
+        if(shared.contains("username") && shared.contains("password")){
+            bookListFragment = new BookListFragment();
+            FragmentTransaction(bookListFragment);
+        } else {
+            loginFragment = new LoginFragment();
+            FragmentTransaction(loginFragment);
+        }
     }
 
     @Override
@@ -90,10 +99,10 @@ public class MainActivity extends AppCompatActivity implements SwitchFragment {
     }
 
     @Override
-    public void switchToBookContentFragment(String bookPath, String bookName) {
-        setTitle(bookName);
+    public void switchToBookContentFragment(String bookPath, Book book) {
+        setTitle(book.getBookName());
         //Created bookContentFragment with bookURL reference
-        bookContentFragment = BookContentFragment.newInstance(bookPath, bookName);
+        bookContentFragment = BookContentFragment.newInstance(bookPath, book);
         FragmentTransaction(bookContentFragment);
     }
 

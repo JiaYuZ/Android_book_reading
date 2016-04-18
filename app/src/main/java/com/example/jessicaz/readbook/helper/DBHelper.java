@@ -34,7 +34,8 @@ public class DBHelper extends SQLiteOpenHelper implements GetHtmlContentRemoteAs
                 + BookList.BookEntry.ROW_AUTHOR_NAME + TEXT_TYPE + COMMA
                 + BookList.BookEntry.ROW_BOOK_IMAGE_URL + TEXT_TYPE + COMMA
                 + BookList.BookEntry.ROW_BOOK_PATH + TEXT_TYPE + COMMA
-                + BookList.BookEntry.ROW_BOOK_VISIT_COUNT + INT_TYPE + ")";
+                + BookList.BookEntry.ROW_BOOK_VISIT_COUNT + INT_TYPE + COMMA
+                + BookList.BookEntry.ROW_BOOK_SCROLL_Y + INT_TYPE + ")";
     private static final String DROP_TABLE_BOOKS = "DROP TABLE IF EXISTS " + BookList.BookEntry.TABLE_BOOKS;
 
     public DBHelper(Context context) {
@@ -65,7 +66,7 @@ public class DBHelper extends SQLiteOpenHelper implements GetHtmlContentRemoteAs
 
     private static final String[] COLUMNS = { BookList.BookEntry.ROW_BOOK_ID, BookList.BookEntry.ROW_BOOK_NAME,
             BookList.BookEntry.ROW_BOOK_URL, BookList.BookEntry.ROW_AUTHOR_NAME, BookList.BookEntry.ROW_BOOK_IMAGE_URL,
-            BookList.BookEntry.ROW_BOOK_PATH, BookList.BookEntry.ROW_BOOK_VISIT_COUNT };
+            BookList.BookEntry.ROW_BOOK_PATH, BookList.BookEntry.ROW_BOOK_VISIT_COUNT, BookList.BookEntry.ROW_BOOK_SCROLL_Y};
 
     public void addBook(Book book) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -77,6 +78,7 @@ public class DBHelper extends SQLiteOpenHelper implements GetHtmlContentRemoteAs
         values.put(BookList.BookEntry.ROW_AUTHOR_NAME, book.getAuthorName());
         values.put(BookList.BookEntry.ROW_BOOK_IMAGE_URL, book.getBookImageURL());
         values.put(BookList.BookEntry.ROW_BOOK_VISIT_COUNT, 0);
+        values.put(BookList.BookEntry.ROW_BOOK_SCROLL_Y, 0);
 
         db.insert(BookList.BookEntry.TABLE_BOOKS, null, values);
         db.close();
@@ -105,6 +107,7 @@ public class DBHelper extends SQLiteOpenHelper implements GetHtmlContentRemoteAs
             book.setAuthorName(cursor.getString(3));
             book.setBookImageURL(cursor.getString(4));
             book.setBookVisitCount(cursor.getInt(6));
+            book.setBookScrollPosition(cursor.getFloat(7));
 
             cursor.close();
         }
@@ -264,5 +267,44 @@ public class DBHelper extends SQLiteOpenHelper implements GetHtmlContentRemoteAs
         } else {
             insertPath(file, book);
         }
+    }
+
+    public int getScrollY(int bookId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        int scrollY = 0;
+
+        Cursor cursor = db.rawQuery("SELECT " + BookList.BookEntry.ROW_BOOK_SCROLL_Y + " FROM " + BookList.BookEntry.TABLE_BOOKS +
+                " WHERE " + BookList.BookEntry.ROW_BOOK_ID + " =?", new String[]{String.valueOf(bookId)});
+
+        if(cursor!=null) {
+            cursor.moveToFirst();
+
+            scrollY =  cursor.getInt(0);
+            cursor.close();
+        }
+
+        db.close();
+        return scrollY;
+    }
+
+    public void updateScrollY(int bookId, int scrollY) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT " + BookList.BookEntry.ROW_BOOK_SCROLL_Y + " FROM " + BookList.BookEntry.TABLE_BOOKS +
+                " WHERE " + BookList.BookEntry.ROW_BOOK_ID + " =?", new String[]{String.valueOf(bookId)});
+
+        if(cursor != null) {
+            cursor.moveToFirst();
+
+            ContentValues values = new ContentValues();
+            values.put(BookList.BookEntry.ROW_BOOK_SCROLL_Y, scrollY);
+
+            db.update(BookList.BookEntry.TABLE_BOOKS, values, BookList.BookEntry.ROW_BOOK_ID + " = ? ",
+                    new String[] {String.valueOf(bookId)});
+
+            cursor.close();
+        }
+
+        db.close();
     }
 }

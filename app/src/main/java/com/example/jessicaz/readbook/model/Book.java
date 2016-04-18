@@ -21,6 +21,7 @@ public class Book implements Serializable,JsonDeserializer, Comparable<Book> {
     private String authorName;
     private String bookImageURL;
     private int bookVisitCount;
+    private float bookScrollPosition;
 
     public Book() {
 
@@ -66,6 +67,12 @@ public class Book implements Serializable,JsonDeserializer, Comparable<Book> {
         this.bookVisitCount = bookVisitCount;
     }
 
+    public float getBookScrollPosition() {
+        return bookScrollPosition;
+    }
+    public void setBookScrollPosition(float bookScrollPosition) {
+        this.bookScrollPosition = bookScrollPosition;
+    }
     @Override
     public Object deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonElement content = json.getAsJsonObject().get("content");

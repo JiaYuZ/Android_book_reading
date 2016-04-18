@@ -160,7 +160,7 @@ public class BookListFragment extends Fragment implements GetBooksRemoteAsyncTac
             bookPath = book.getBookURL();
         }
 
-        switchFragment.switchToBookContentFragment(bookPath, book.getBookName());
+        switchFragment.switchToBookContentFragment(bookPath, book);
     }
 
     public void getBooksList() {

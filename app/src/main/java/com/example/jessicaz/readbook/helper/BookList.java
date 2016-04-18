@@ -20,5 +20,6 @@ public class BookList {
         public static final String ROW_BOOK_IMAGE_URL = "imageurl";
         public static final String ROW_BOOK_PATH = "bookpath";
         public static final String ROW_BOOK_VISIT_COUNT = "visitcount";
+        public static final String ROW_BOOK_SCROLL_Y = "scrollposition";
     }
 }

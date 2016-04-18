@@ -152,7 +152,7 @@ public class SearchResultFragment extends Fragment implements SearchResultAdapte
         }
 
         SwitchFragment switchFragment = (SwitchFragment) getActivity();
-        switchFragment.switchToBookContentFragment(bookPath, book.getBookName());
+        switchFragment.switchToBookContentFragment(bookPath, book);
     }
 
     @Override

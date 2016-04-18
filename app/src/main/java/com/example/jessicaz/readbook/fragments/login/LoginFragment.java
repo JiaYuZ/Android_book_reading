@@ -1,6 +1,8 @@
 package com.example.jessicaz.readbook.fragments.login;
 
 import android.app.Fragment;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -21,6 +23,8 @@ import retrofit.Call;
 import retrofit.GsonConverterFactory;
 import retrofit.Response;
 import retrofit.Retrofit;
+
+import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Created by jessicazeng on 11/6/15.
@@ -68,12 +72,23 @@ public class LoginFragment extends Fragment {
         @Override
         protected void onPostExecute(Response<String> result) {
             if (result.isSuccess()) {
+                saveLoginInfo(username, password);
+
                 mSwitchFragment = (SwitchFragment) getActivity();
                 mSwitchFragment.switchToBookListFragment();
             } else {
                 Toast.makeText(getActivity(), "Incorrect User Name or Password !!", Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    private void saveLoginInfo(String username, String password) {
+        getActivity();
+        SharedPreferences shared = getActivity().getSharedPreferences("shared", MODE_PRIVATE);
+        SharedPreferences.Editor editor = shared.edit();
+        editor.putString("username", username);
+        editor.putString("password", password);
+        editor.apply();
     }
 
     @Override

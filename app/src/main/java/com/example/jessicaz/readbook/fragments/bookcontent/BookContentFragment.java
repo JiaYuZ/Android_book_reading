@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.RelativeLayout;
 
 import com.example.jessicaz.readbook.R;
@@ -27,7 +28,11 @@ public class BookContentFragment extends Fragment {
     @Bind(R.id.loading_spinner)
     RelativeLayout spinner;
 
+    private static final String BUNDLE_KEY_BOOK_PATH = "bookPath";
+    private static final String BUNDLE_KEY_BOOK_NAME = "bookName";
+
     private String bookURL;
+    private String bookName;
     private long startLoadTimestamp;
     private static Handler sHandler = new Handler();
 
@@ -35,11 +40,12 @@ public class BookContentFragment extends Fragment {
 
     }
 
-    public static BookContentFragment newInstance(String bookURL) {
+    public static BookContentFragment newInstance(String bookPath, String bookName) {
         BookContentFragment bookContentFragment = new BookContentFragment();
         Bundle args = new Bundle();
 
-        args.putString("bookURL", bookURL);
+        args.putString(BUNDLE_KEY_BOOK_PATH, bookPath);
+        args.putString(BUNDLE_KEY_BOOK_NAME, bookName);
         bookContentFragment.setArguments(args);
 
         return bookContentFragment;
@@ -51,7 +57,8 @@ public class BookContentFragment extends Fragment {
 
         Bundle arg = getArguments();
         if(arg != null) {
-            bookURL = arg.getString("bookURL");
+            bookURL = arg.getString(BUNDLE_KEY_BOOK_PATH);
+            bookName = arg.getString(BUNDLE_KEY_BOOK_NAME);
         }
 
         startLoadTimestamp = new Date().getTime();
@@ -61,13 +68,17 @@ public class BookContentFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.book_content_fragment, container, false);
-    }
+   }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         ButterKnife.bind(this, view);
+
+        webView.getSettings().setLoadWithOverviewMode(true);
+        webView.loadUrl(bookURL);
+        webView.requestFocus();
 
         Runnable spinnerDisplay = new Runnable() {
             @Override
